@@ -1,1 +1,1 @@
-# quottery
+# quottery-frontend
