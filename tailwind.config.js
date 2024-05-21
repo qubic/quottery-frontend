@@ -59,6 +59,7 @@ export default {
         16: ['1.6rem'],
         18: ['1.8rem'],
         20: ['2.0rem'],
+        24: ['2.4rem'],
         48: ['4.8rem'],
       },
       lineHeight: {

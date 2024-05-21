@@ -1,6 +1,7 @@
 import { Typography } from '@mui/material';
 import React from 'react';
 import { formatString } from '../../utils/functions';
+import CardItem from './common/CardItem';
 
 interface BetItemProps {
   title: string;
@@ -11,7 +12,7 @@ interface BetItemProps {
 }
 const BetItem: React.FC<BetItemProps> = ({ title, expireDate, leftSlot, fee, amount }) => {
   return (
-    <div className="p-24 bg-gray-80 border-1 border-gray-70 rounded-8">
+    <CardItem className="p-24 ">
       <div className="flex flex-col gap-24">
         <Typography className="text-white text-16 leading-24 text-left font-space">
           {title}
@@ -45,7 +46,7 @@ const BetItem: React.FC<BetItemProps> = ({ title, expireDate, leftSlot, fee, amo
           </Typography>
         </div>
       </div>
-    </div>
+    </CardItem>
   );
 };
 
