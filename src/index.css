@@ -2,15 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-html{
+html {
     font-size: 10px;
     background-color: #101820;
 }
 
 a[role=button] {
+    font-family: "Space Grotesk", sans-serif;
     text-decoration: none;
 }
 
 [role="tooltip"] {
     z-index: 9999;
+}
+
+p,
+a {
+    font-family: "Space Grotesk", sans-serif;
 }
