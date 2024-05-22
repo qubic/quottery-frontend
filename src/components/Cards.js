@@ -7,7 +7,7 @@ function Cards(props) {
 
   return (
     <>
-      <CardItem className="p-[24px]">
+      <CardItem className="p-[24px] h-[210px]">
         <div className="flex flex-col items-start justify-start gap-[24px]">
           <div className=" font-space text-white text-[16px] leading-[24px]">
             {data.title}
