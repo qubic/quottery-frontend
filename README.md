@@ -1,4 +1,13 @@
 # quottery-frontend
+Frontend for the Quottery Smart Contract.
+
+We use React and TailwindCSS. 
+
+## Installation & Running
+```bash
+pnpm install
+pnpm start
+```
 
 
 ## License
