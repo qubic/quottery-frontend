@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BetOverviewCard from '../components/BetOverviewCard'
 // import { mockData } from './mockData'
 import Dropdown from '../components/qubic/Dropdown'
+import { useBetContext } from '../contexts/BetContext'
 
 function StartPage() {
   const navigate = useNavigate()
-  const [bets, setBets] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { state, loading } = useBetContext();
   const [listFilter, setListFilter] = useState('all') // or e.g. {key: 'isActive', val: true}
   const [currentFilterOption, setCurrentFilterOption] = useState(0)
   const filterOptions = [
@@ -15,43 +15,6 @@ function StartPage() {
     {label: 'Active', value: {key: 'isActive', val: true}},
     {label: 'Inactive', value: {key: 'isActive', val: false}}
   ]
-  const backendUrl = 'http://65.21.185.4:5000/get_active_bets'
-
-  const parseDate = (dateString) => {
-    const [year, month, day] = dateString.split('-').map(Number)
-    if (isNaN(year) || isNaN(month) || isNaN(day)) {
-      throw new Error('Invalid date format')
-    }
-    return new Date(year + 2000, month - 1, day)
-  }
-
-  const fetchBets = async () => {
-    setLoading(true)
-    
-    const response = await fetch(backendUrl)
-    const data = await response.json()
-    
-    // check if data contains bet_list
-    if (data.bet_list) {      
-      data.bet_list.forEach(bet => {
-        // let's parse oracle_fee and oracle_id using JSON.parse
-        bet.oracle_fee = JSON.parse(bet.oracle_fee)
-        bet.oracle_id = JSON.parse(bet.oracle_id)
-        // add an expires_in field to each bet based on open_date and close_date
-        const closeDate = parseDate(bet.close_date)
-        const now = new Date()
-        const diff = closeDate - now
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        bet.expires_in = days
-        // add as isActive field to each bet
-        bet.isActive = now < closeDate
-      })
-      console.log(data.bet_list)
-      setBets(data.bet_list)
-      setLoading(false)
-      return
-    }
-  }
 
   const filterBets = (bets) => {
     if (listFilter === 'all') {
@@ -61,10 +24,6 @@ function StartPage() {
     }
     return bets
   }
-
-  useEffect(() => {
-    fetchBets()
-  }, [])
 
   return (
     <div className='sm:px-30 md:px-130'>
@@ -99,8 +58,8 @@ function StartPage() {
       '>
         {loading && <div>Loading...</div>}
         
-        {!loading && bets && bets.length > 0 && <>
-          {filterBets(bets).map((bet, index) => 
+        {!loading && state.bets && state.bets.length > 0 && <>
+          {filterBets(state.bets).map((bet, index) => 
             <BetOverviewCard 
               key={'bet' + index}
               data={bet}

@@ -1,55 +1,50 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { IoIosArrowDown } from "react-icons/io"
 import clsx from 'clsx'
-import { mockData } from './mockData'
+import { useBetContext } from '../contexts/BetContext'
 import Card from '../components/qubic/Card'
 import QubicCoin from "../assets/qubic-coin.svg"
-import { formatQubicAmount } from '../components/qubic/util'
+import { formatQubicAmount, truncateMiddle } from '../components/qubic/util'
+import MinMaxSpan from '../components/MinMaxSpan'
+import LabelData from '../components/LabelData'
 
 function BetDetailsPage() {
-
-  const [bet, setBet] = useState({})
+  const { id } = useParams()
+  const { state } = useBetContext()
+  const bet = state.bets.find(bet => bet.bet_id === parseInt(id))
   const [selectedOption, setSelectedOption] = useState(null)
   const [amountOfBetSlots, setAmountOfBetSlots] = useState(1)
   const [optionCosts, setOptionCosts] = useState(0)
   const [detailsViewVisible, setDetailsViewVisible] = useState(false)
 
   const navigate = useNavigate()
-
-  const getBetDetails = () => {
-    const betId = window.location.pathname.split('/').pop()
-    const bet = mockData.find(bet => bet.id === parseInt(betId))
-    setOptionCosts(bet.pricePerSlot * amountOfBetSlots)
-    setBet(bet)
-  }
-
-  useEffect(() => {
-    getBetDetails()
-  }, [])
+  const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
+  console.log('bet', bet)
 
   const updateAmountOfBetSlots = (value) => {
-    // check if value is not less than 1 and not greater than maxSlotsPerOption
-    if (value < 1 || value > bet.maxSlotsPerOption) return
+    // check if value is not less than 1 and not greater than max_slot_per_option
+    if (value < 1 || value > bet.max_slot_per_option) return
     // valid value
-    setOptionCosts(value * bet.pricePerSlot)
+    setOptionCosts(value * bet.amount_per_bet_slot)
     setAmountOfBetSlots(value)
   }
 
+  const calcPercentage = (value, total) => (value / total) * 100
   const toggleDetailsView = () => setDetailsViewVisible(!detailsViewVisible)
   const incAmountOfBetSlots = () => updateAmountOfBetSlots(amountOfBetSlots + 1)
   const decAmountOfBetSlots = () => updateAmountOfBetSlots(amountOfBetSlots - 1)
 
   return (
     <div className='sm:px-30 md:px-130'>
-      {(bet && !bet.id) && <div className='text-center mt-[105px] text-white'>Loading...</div>}
+      {(bet && !bet.bet_id) && <div className='text-center mt-[105px] text-white'>Loading...</div>}
       
-      {bet && bet.id && <>
+      {bet && bet.bet_id && <>
         
         <div className='mt-[10px] px-5 sm:px-20 md:px-100'>
-        <div className='p-5 bg-gray-70 mt-[105px] mb-9 rounded-[8px] text-center text-[35px] font-space text-white'>
-          {bet.title}
-        </div>
+          <div className='p-5 bg-gray-70 mt-[105px] mb-9 rounded-[8px] text-center text-[35px] font-space text-white'>
+            {bet.bet_desc}
+          </div>
           <Card className='p-[24px] w-full'>
             <div className='flex flex-col items-start justify-start gap-4'>
               <div className=' flex justify-between items-center w-full'>
@@ -58,7 +53,10 @@ function BetDetailsPage() {
                     Expires in
                   </span>
                   <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    {bet.expireDay}
+                    {bet.expires_in > 0 && <>
+                      {bet.expires_in} {bet.expires_in === 1 ? 'Day' : 'Days'}                    
+                    </>}
+                    {bet.expires_in === 0 && 'Expired'}
                   </span>
                 </div>
                 <div className=' flex flex-col justify-center items-start'>
@@ -66,15 +64,15 @@ function BetDetailsPage() {
                     Slots taken
                   </span>
                   <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    {bet.slotsLeft}
+                    {sum(bet.current_num_selection)}
                   </span>
                 </div>
                 <div className=' flex flex-col justify-center items-center'>
                   <span className=' font-space text-gray-50 text-[12px] leading-[16px]'>
-                    Fee
+                    Fee %
                   </span>
                   <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    {bet.fee}
+                    <MinMaxSpan values={bet} prop={'oracle_fee'} />
                   </span>
                 </div>
               </div>
@@ -85,42 +83,21 @@ function BetDetailsPage() {
                 <div className=' gap-[12px] flex justify-center items-center'>
                   <img src={QubicCoin} alt='' />
                   <span className='font-space text-white text-[18px] leading-[23px]'>
-                    {formatQubicAmount(bet.amount)} QUBIC
+                    {formatQubicAmount(bet.current_total_qus)} QUBIC
                   </span>
                 </div>
               </div>
 
               {detailsViewVisible && <div className='w-full'>
-                <div className='flex flex-col'>
-                  <span className='text-gray-50 text-12'>Open</span>
-                  <span className='text-white text-16'>
-                    {bet.openDate}
-                  </span>
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-gray-50 text-12'>Close</span>
-                  <span className='text-white text-16'>
-                    {bet.closeDate}
-                  </span>
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-gray-50 text-12'>End</span>
-                  <span className='text-white text-16'>
-                    {bet.endDate}
-                  </span>
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-gray-50 text-12'>Creator</span>
-                  <span className='text-white text-16'>
-                    {bet.creator}
-                  </span>
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-gray-50 text-12'>Oracle Provider</span>
-                  <span className='text-white text-16'>
-                    {bet.oracleProvider}
-                  </span>
-                </div>
+                <div className='grid grid-cols-3'>
+                  <LabelData lbl='Open' value={bet.open_date} />
+                  <LabelData lbl='Close' value={bet.close_date} />
+                  <LabelData lbl='End' value={bet.end_date} />
+                </div>                
+                <LabelData lbl='Creator' value={truncateMiddle(bet.creator, 40)} />                
+                <LabelData lbl='Oracle Provider(s)' value={bet.oracle_id.map((id, index) => (
+                  <span className='block' key={index}>{truncateMiddle(id, 40)}</span>
+                ))} />                
               </div>}
 
               <button className='flex w-full items-center text-14 text-primary-40'
@@ -138,56 +115,61 @@ function BetDetailsPage() {
             <span className='font-space text-gray-50 text-[12px] leading-[16px] mb-3 block'>
               Decide for your bet
             </span>
-            {bet && bet.options && bet.options.map((option, index) => {
+            {bet && bet.option_desc && bet.option_desc.map((option, index) => {
               return (
-                <button 
-                  key={index}
-                  className={clsx(
-                    'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40', 
-                    selectedOption === option.id && 'bg-success-40'
-                  )}
-                  onClick={() => setSelectedOption(option.id)}
-                >
-                  {option.title}
-                </button>
+                <div className='flex items-center gap-4' key={index}>
+                  <button 
+                    key={index}
+                    className={clsx(
+                      'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40', 
+                      selectedOption === index && 'bg-success-40'
+                    )}
+                    onClick={() => setSelectedOption(index)}
+                  >
+                    {option} (
+                      {bet.current_num_selection[index]} / {' '}
+                      {calcPercentage(bet.current_num_selection[index], sum(bet.current_num_selection)).toFixed(2)} %)
+                  </button>
+                  <span className='text-white text-[16px] leading-[24px]'>
+                    {Number(bet.betting_odds[index]).toFixed(2)}
+                  </span>
+                </div>
               )
             })}
           </Card>
           {selectedOption === null && <div className='mb-40'></div>}
-          {selectedOption && 
-            <Card className='p-[24px] w-full mt-[16px] mb-40'>
-              {selectedOption && <>              
-                <span className=' font-space text-gray-50 text-[12px] leading-[16px] block mb-3'>
-                  How many Bet Slots you want to buy?
-                </span>
-                <div className='flex'>
-                  <button 
-                    className='flex-1 bg-[rgba(26,222,245,0.1)] text-primary-40 font-space font-bold'
-                    onClick={decAmountOfBetSlots}
-                  >-</button>
-                  <input 
-                    className='flex-1 py-3 text-[25px] text-center'
-                    type='number'
-                    value={amountOfBetSlots}
-                    onChange={(e) => updateAmountOfBetSlots(e.target.value)}
-                  />
-                  <button 
-                    className='flex-1 bg-[rgba(26,222,245,0.1)] text-primary-40 font-space font-bold'
-                    onClick={incAmountOfBetSlots}
-                  >+</button>
-                </div>
-                <span
-                  className='font-space text-gray-50 text-[12px] leading-[16px] block mt-3 text-right'
-                >
-                  Price per slot: {formatQubicAmount(bet.pricePerSlot)} QUBIC
-                </span>
-                <span
-                  className='font-space text-gray-50 text-[12px] leading-[16px] block mt-3 text-right underline cursor-pointer'
-                  onClick={() => updateAmountOfBetSlots(bet.maxSlotsPerOption)}
-                >
-                  Go for Max ({bet.maxSlotsPerOption})
-                </span>
-              </>}              
+          {selectedOption >= 0 && 
+            <Card className='p-[24px] w-full mt-[16px] mb-40'>              
+              <span className=' font-space text-gray-50 text-[12px] leading-[16px] block mb-3'>
+                How many Bet Slots you want to buy?
+              </span>
+              <div className='flex'>
+                <button 
+                  className='flex-1 bg-[rgba(26,222,245,0.1)] text-primary-40 font-space font-bold'
+                  onClick={decAmountOfBetSlots}
+                >-</button>
+                <input 
+                  className='flex-1 py-3 text-[25px] text-center'
+                  type='number'
+                  value={amountOfBetSlots}
+                  onChange={(e) => updateAmountOfBetSlots(e.target.value)}
+                />
+                <button 
+                  className='flex-1 bg-[rgba(26,222,245,0.1)] text-primary-40 font-space font-bold'
+                  onClick={incAmountOfBetSlots}
+                >+</button>
+              </div>
+              <span
+                className='font-space text-gray-50 text-[12px] leading-[16px] block mt-3 text-right'
+              >
+                Price per slot: {formatQubicAmount(bet.amount_per_bet_slot)} QUBIC
+              </span>
+              <span
+                className='font-space text-gray-50 text-[12px] leading-[16px] block mt-3 text-right underline cursor-pointer'
+                onClick={() => updateAmountOfBetSlots(bet.max_slot_per_option)}
+              >
+                Go for Max ({bet.max_slot_per_option})
+              </span>         
             </Card>
           }
         </div>

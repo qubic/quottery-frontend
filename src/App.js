@@ -7,22 +7,25 @@ import StartPage from './pages/StartPage'
 import BetDetailsPage from './pages/BetDetailsPage'
 import './App.css'
 import { QubicConnectProvider } from './components/qubic/connect/QubicConnectContext'
+import { BetProvider } from './contexts/BetContext'
 
 function App() {
   return (
-    <QubicConnectProvider>
-      <BrowserRouter>
-        <Header />
-        <Routes>
-          <Route>
-            <Route path="/" element={<StartPage />} />
-          </Route>
-          <Route>
-            <Route path="/bet/:id" element={<BetDetailsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </QubicConnectProvider>
+    <BetProvider>
+      <QubicConnectProvider>
+        <BrowserRouter>
+          <Header />
+          <Routes>
+            <Route>
+              <Route path="/" element={<StartPage />} />
+            </Route>
+            <Route>
+              <Route path="/bet/:id" element={<BetDetailsPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </QubicConnectProvider>
+    </BetProvider>
   )
 }
 
