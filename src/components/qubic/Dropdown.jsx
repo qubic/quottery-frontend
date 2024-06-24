@@ -16,7 +16,7 @@ const Dropdown = ({ label, options, selected, setSelected }) => {
                 {label}
             </span>
         {isDropdownOpen && (
-            <div className="absolute mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg">
+            <div className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg">
                 {options.map((option, index) => (
                     <div
                         key={index}
