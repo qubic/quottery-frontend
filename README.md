@@ -5,6 +5,7 @@ We use React and TailwindCSS.
 
 ## Installation & Running
 ```bash
+npm install -g pnpm
 pnpm install
 pnpm start
 ```
