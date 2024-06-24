@@ -41,9 +41,9 @@ function BetDetailsPage() {
 
   return (
     <div className='sm:px-30 md:px-130'>
-      {(bet && !bet.bet_id) && <div className='text-center mt-[105px] text-white'>Loading...</div>}
+      {!bet && <div className='text-center mt-[105px] text-white'>Loading...</div>}
       
-      {bet && bet.bet_id && <>
+      {bet && bet.bet_id >= 0 && <>
         
         <div className='mt-[10px] px-5 sm:px-20 md:px-100'>
           <div className='p-5 bg-gray-70 mt-[105px] mb-9 rounded-[8px] text-center text-[35px] font-space text-white'>
