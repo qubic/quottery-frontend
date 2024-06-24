@@ -2,6 +2,7 @@ import React from "react"
 import Card from "./qubic/Card"
 import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount } from "./qubic/util"
+import MinMaxSpan from "./MinMaxSpan"
 
 function BetOverviewCard({ data, onClick }) {
 
@@ -16,17 +17,6 @@ function BetOverviewCard({ data, onClick }) {
     </div>
   )
 
-  const minMaxFee = () => {
-    // get smallest and highest fee from data.oracle_fee array
-    const min = Math.min(...data.oracle_fee)
-    const max = Math.max(...data.oracle_fee)
-    // if min and max are the same, return just one value
-    if (min === max) 
-      return <span>{min}</span>
-    // otherwise
-    return <span>{min} - {max}</span>
-  }
-
   return (
     <Card 
       className="p-[24px] h-[210px] hover:border-primary-40 cursor-pointer"
@@ -39,7 +29,10 @@ function BetOverviewCard({ data, onClick }) {
         <div className="flex justify-between items-center w-full">
           <LabelData lbl="Expires in" value={data.expires_in} />
           <LabelData lbl="Slots left" value={data.slotsLeft} />
-          <LabelData lbl="Fee %" value={minMaxFee()} />
+          <LabelData 
+            lbl="Fee %" 
+            value={<MinMaxSpan values={data} prop={'oracle_fee'} />} 
+          />
         </div>
         <div className="gap-[12px] flex justify-center items-center">
           <img src={QubicCoin} alt="" />
