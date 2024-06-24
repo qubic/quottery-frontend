@@ -32,10 +32,10 @@ function StartPage() {
         </span>
       </div>
       <div className='text-gray-50 mt-[24px] text-center font-space'>
-        <span className='text-[18px]'>Quottery is p2p betting system</span>
+        <span className='text-[18px]'>Join the ultimate P2P betting revolution. Safe, Secure and Exciting.</span>
       </div>
       <div className=' flex justify-center items-center mt-[32px] '>
-        <button className='bg-[rgba(26,222,245,0.1)] py-[8px] px-[16px] text-[14px] text-primary-40 font-space rounded-[8px]'>Create Bet</button>
+        {/* <button className='bg-[rgba(26,222,245,0.1)] py-[8px] px-[16px] text-[14px] text-primary-40 font-space rounded-[8px]'>Create Bet</button> */}
       </div>
       <div className='flex justify-between items-center mt-[48px] px-20'>
         <span className=' text-white font-space'>{filterOptions[currentFilterOption].label} Bets</span>
