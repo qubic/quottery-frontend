@@ -1,6 +1,6 @@
-import ConfirmSlider from "../../ConfirmSlider"
+// import ConfirmSlider from "../../ConfirmSlider"
 import Card from "../Card"
-import { useQubicConnect } from "./QubicConnectContext"
+// import { useQubicConnect } from "./QubicConnectContext"
 
 const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
     return (<>
