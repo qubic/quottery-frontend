@@ -6,6 +6,7 @@ const ConnectModal = ({ open, onClose }) => {
 
     const [selectedMode, setSelectedMode] = useState('none')
     const [privateSeed, setPrivateSeed] = useState('')
+    const [errorMsgPrivateSeed, setErrorMsgPrivateSeed] = useState('')
     const { connect, disconnect, connected } = useQubicConnect()    
 
     const privateKeyConnect = () => {
@@ -14,6 +15,20 @@ const ConnectModal = ({ open, onClose }) => {
         setSelectedMode('none')
         setPrivateSeed('')
         onClose()
+    }
+    
+    // check if input is valid seed (55 chars and only lowercase letters)
+    const privateKeyValidate = (pk) => {
+        if (pk.length !== 55) {
+            setErrorMsgPrivateSeed('Seed must be 55 characters long')
+        }
+        if (pk.match(/[^a-z]/)) {
+            setErrorMsgPrivateSeed('Seed must contain only lowercase letters')
+        }
+        if (pk.length === 55 && !pk.match(/[^a-z]/)) {
+            setErrorMsgPrivateSeed('')
+        }
+        setPrivateSeed(pk)
     }
 
     const vaultFileConnect = () => {
@@ -30,7 +45,9 @@ const ConnectModal = ({ open, onClose }) => {
         >
             <Card className="relative p-8 w-full max-w-md m-auto flex-col flex" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center">
-                    <div className="text-2xl text-white">qubic <span className="text-primary-40">connect</span></div>
+                    <div className="text-2xl text-white">
+                        qubic <span className="text-primary-40">connect</span>
+                    </div>
                     <button onClick={onClose} className="text-2xl text-white">X</button>
                 </div>
                 
@@ -61,8 +78,9 @@ const ConnectModal = ({ open, onClose }) => {
                         <input 
                             type="text" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
                             value={privateSeed}
-                            onChange={(e) => setPrivateSeed(e.target.value)}
+                            onChange={(e) => privateKeyValidate(e.target.value)}
                         />
+                        {errorMsgPrivateSeed && <p className="text-red-500">{errorMsgPrivateSeed}</p>}
                         <div className="grid grid-cols-2 gap-4 mt-4">
                             <button 
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
