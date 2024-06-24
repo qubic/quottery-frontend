@@ -8,6 +8,7 @@ import BetDetailsPage from './pages/BetDetailsPage'
 import './App.css'
 import { QubicConnectProvider } from './components/qubic/connect/QubicConnectContext'
 import { BetProvider } from './contexts/BetContext'
+import Footer from './components/layout/Footer'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="/bet/:id" element={<BetDetailsPage />} />
             </Route>
           </Routes>
+          <Footer />
         </BrowserRouter>
       </QubicConnectProvider>
     </BetProvider>
