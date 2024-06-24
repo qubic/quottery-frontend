@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BetOverviewCard from '../components/BetOverviewCard'
-// import { mockData } from './mockData'
 import Dropdown from '../components/qubic/Dropdown'
 import { useBetContext } from '../contexts/BetContext'
 

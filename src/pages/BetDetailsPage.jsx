@@ -8,19 +8,23 @@ import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount, truncateMiddle } from '../components/qubic/util'
 import MinMaxSpan from '../components/MinMaxSpan'
 import LabelData from '../components/LabelData'
+import { useQubicConnect } from '../components/qubic/connect/QubicConnectContext'
+import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
 
 function BetDetailsPage() {
   const { id } = useParams()
   const { state } = useBetContext()
+  const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
   const bet = state.bets.find(bet => bet.bet_id === parseInt(id))
   const [selectedOption, setSelectedOption] = useState(null)
   const [amountOfBetSlots, setAmountOfBetSlots] = useState(1)
   const [optionCosts, setOptionCosts] = useState(0)
   const [detailsViewVisible, setDetailsViewVisible] = useState(false)
+  const { connected, toggleConnectModal } = useQubicConnect()
 
   const navigate = useNavigate()
   const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
-  console.log('bet', bet)
+  // console.log('bet', bet)
 
   const updateAmountOfBetSlots = (value) => {
     // check if value is not less than 1 and not greater than max_slot_per_option
@@ -176,7 +180,7 @@ function BetDetailsPage() {
 
         {/** Bet Now button */}
         <div className='
-          fixed h-[78px] flex w-full z-20 bottom-0 gap-6 
+          fixed h-[78px] flex w-full z-5 bottom-0 gap-6 
           border-t border-solid border-gray-70 bg-gray-90
         '>  
           <button className='bg-[rgba(26,222,245,0.1)] flex-none py-[8px] px-[16px] text-[14px] text-primary-40 font-space'
@@ -193,10 +197,31 @@ function BetDetailsPage() {
             </span>
           </div>
           {optionCosts > 0 && <>
-            <button className='flex-none bg-primary-40 py-[8px] px-10 text-18 font-bold'>
-              Bet Now
+            <button 
+              className='flex-none bg-primary-40 py-[8px] px-10 text-18 font-bold'
+              onClick={() => {
+                if(connected) {
+                  setShowConfirmTxModal(true)
+                }else{
+                  toggleConnectModal()
+                }
+              }}
+            >
+              {connected ? 'Bet Now!' : 'Unlock!'}
             </button>
           </>}
+          <ConfirmTxModal 
+            open={showConfirmTxModal} 
+            onClose={() => setShowConfirmTxModal(false)}
+            tx={{
+              title: 'Bet Now', 
+              description: 'Are you sure you want to bet now?'
+            }} 
+            onConfirm={() => {
+              console.log('bet now')
+              setShowConfirmTxModal(false)
+            }} 
+          />
         </div>
       </>}
     </div>

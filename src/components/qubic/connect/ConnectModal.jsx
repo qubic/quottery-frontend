@@ -69,7 +69,7 @@ const ConnectModal = ({ open, onClose }) => {
                                 onClick={() => setSelectedMode('none')}>Cancel</button>
                             <button 
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
-                                onClick={() => privateKeyConnect()}>Connect</button>
+                                onClick={() => privateKeyConnect()}>Unlock</button>
                         </div>
                     </div>
                 }
@@ -85,7 +85,7 @@ const ConnectModal = ({ open, onClose }) => {
                                 onClick={() => setSelectedMode('none')}>Cancel</button>
                             <button 
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
-                                onClick={() => vaultFileConnect()}>Connect</button>
+                                onClick={() => vaultFileConnect()}>Unlock</button>
                         </div>
                     </div>
                 }

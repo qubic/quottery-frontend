@@ -1,16 +1,14 @@
-import { useState } from "react"
 import lock from "../../../assets/lock.svg"
 import unlocked from "../../../assets/unlocked.svg"
 import ConnectModal from "./ConnectModal"
 import { useQubicConnect } from "./QubicConnectContext"
 
 const ConnectLink = () => {
-    const [open, setOpen] = useState(false)
-    const { connected } = useQubicConnect()    
+    const { connected, showConnectModal, toggleConnectModal } = useQubicConnect()    
 
     return (<>
         <div className="absolute right-12 sm:right-12 flex gap-[10px] justify-center items-center"
-            onClick={() => setOpen(true)}
+            onClick={() => toggleConnectModal()}
         >
             {connected ? <>
                 <span className='hidden md:block font-space text-[16px] text-gray-50 mt-[5px] font-[500]'>
@@ -26,8 +24,8 @@ const ConnectLink = () => {
             }
         </div>
         <ConnectModal 
-            open={open}
-            onClose={() => setOpen(false)}
+            open={showConnectModal}
+            onClose={() => toggleConnectModal()}
         />
     </>)
 }

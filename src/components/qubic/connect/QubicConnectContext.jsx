@@ -5,6 +5,7 @@ const QubicConnectContext = createContext()
 export function QubicConnectProvider({ children }) {
   const [connected, setConnected] = useState(false)
   const [wallet, setWallet] = useState(null)
+  const [showConnectModal, setShowConnectModal] = useState(false)
 
   useEffect(() => {
     const wallet = localStorage.getItem('wallet')
@@ -26,8 +27,15 @@ export function QubicConnectProvider({ children }) {
     setConnected(false)
   }
 
+  const toggleConnectModal = () => {
+    setShowConnectModal(!showConnectModal)
+  }
+
   return (
-    <QubicConnectContext.Provider value={{ connected, wallet, connect, disconnect }}>
+    <QubicConnectContext.Provider value={{ 
+      connected, wallet, showConnectModal, 
+      connect, disconnect, toggleConnectModal
+    }}>
       {children}
     </QubicConnectContext.Provider>
   )
@@ -36,7 +44,7 @@ export function QubicConnectProvider({ children }) {
 export function useQubicConnect() {
     const context =  useContext(QubicConnectContext)
     if (context === undefined) {
-        throw new Error("useQubicConnect must be used within a QubicConnectProvider")
+      throw new Error("useQubicConnect must be used within a QubicConnectProvider")
     }
     return context
 }
