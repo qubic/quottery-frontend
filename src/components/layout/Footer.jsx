@@ -19,7 +19,7 @@ const Footer = () => {
             >
               Terms of service
             </a>
-            <span class="text-gray-50">•</span>
+            <span className="text-gray-50">•</span>
             <a
               style={{ textDecoration: 'none', color: 'white' }}
               className="text-12 leading-18 font-space"
@@ -27,7 +27,7 @@ const Footer = () => {
             >
               Privacy Policy
             </a>
-            <span class="text-gray-50">•</span>
+            <span className="text-gray-50">•</span>
             <a
                 style={{ textDecoration: 'none', color: 'white' }}
                 className="text-12 leading-18 font-space"
