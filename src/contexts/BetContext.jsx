@@ -18,7 +18,7 @@ export const BetProvider = ({ children }) => {
   useEffect(() => {
     const fetchBets = async () => {
       setLoading(true)
-      const response = await fetch('http://65.21.185.4:5000/get_active_bets')
+      const response = await fetch('https://qb.qubic.org/get_active_bets')
       const data = await response.json()
 
       if (data.bet_list) {

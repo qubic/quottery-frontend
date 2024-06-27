@@ -20,7 +20,7 @@ function BetDetailsPage() {
   const [amountOfBetSlots, setAmountOfBetSlots] = useState(1)
   const [optionCosts, setOptionCosts] = useState(0)
   const [detailsViewVisible, setDetailsViewVisible] = useState(false)
-  const { connected, toggleConnectModal } = useQubicConnect()
+  const { connected, toggleConnectModal, signTx } = useQubicConnect()
 
   const navigate = useNavigate()
   const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
@@ -219,6 +219,12 @@ function BetDetailsPage() {
             }} 
             onConfirm={() => {
               console.log('bet now')
+              signTx({
+                betId: bet.bet_id,
+                betOption: selectedOption,
+                numberOfSlots: amountOfBetSlots,
+                amountPerSlot: bet.amount_per_bet_slot
+              })
               setShowConfirmTxModal(false)
             }} 
           />
