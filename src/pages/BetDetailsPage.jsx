@@ -217,17 +217,16 @@ function BetDetailsPage() {
               title: 'Bet Now', 
               description: 'Are you sure you want to bet now?'
             }} 
-            onConfirm={() => {
-              console.log('bet now')
-              signTx({
+            onConfirm={async () => {
+              const confirmed = await signTx({
                 betId: bet.bet_id,
                 betOption: selectedOption,
                 numberOfSlots: amountOfBetSlots,
                 amountPerSlot: bet.amount_per_bet_slot
               })
-              setShowConfirmTxModal(false)
+              return confirmed
             }} 
-          />
+          />          
         </div>
       </>}
     </div>

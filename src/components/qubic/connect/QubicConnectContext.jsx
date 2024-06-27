@@ -106,17 +106,20 @@ export function QubicConnectProvider({ children }) {
     offset += qHelper.SIGNATURE_LENGTH
 
     console.log('bet:', bet)
-    console.log('Response:', await broadcastTx(tx))
+    const txResult = await broadcastTx(tx)
+    console.log('Response:', txResult)
 
-    return tx
+    return {
+      targetTick: tick + tickOffset,
+      txResult
+    }
   }
 
   const broadcastTx = async (tx) => {
-    console.log('broadcast TX: ', tx)
     const url = `${httpEndpoint}/v1/broadcast-transaction`
     const txEncoded = uint8ArrayToBase64(tx)
     const body = {encodedTransaction: txEncoded}
-    console.log('body:', body)
+    // console.log('body:', body)
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -136,6 +139,11 @@ export function QubicConnectProvider({ children }) {
   const getTick = async () => {
     const tickResult = await fetch(`${httpEndpoint}/v1/tick-info`)
     const tick = await tickResult.json()
+    // check if tick is valid
+    if (!tick || !tick.tickInfo || !tick.tickInfo.tick) {
+      console.warn('getTick: Invalid tick')
+      return 0
+    }
     return tick.tickInfo.tick
   }
 
@@ -143,7 +151,7 @@ export function QubicConnectProvider({ children }) {
     <QubicConnectContext.Provider value={{ 
       connected, wallet, showConnectModal, 
       connect, disconnect, toggleConnectModal,
-      signTx
+      signTx, getTick
     }}>
       {children}
     </QubicConnectContext.Provider>
