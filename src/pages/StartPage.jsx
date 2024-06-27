@@ -7,8 +7,8 @@ import { useBetContext } from '../contexts/BetContext'
 function StartPage() {
   const navigate = useNavigate()
   const { state, loading } = useBetContext();
-  const [listFilter, setListFilter] = useState('all') // or e.g. {key: 'isActive', val: true}
-  const [currentFilterOption, setCurrentFilterOption] = useState(0)
+  const [listFilter, setListFilter] = useState({key: 'isActive', val: true}) // or e.g. {key: 'isActive', val: true} or 'all'
+  const [currentFilterOption, setCurrentFilterOption] = useState(1) // 0 = All, 1 = Active, 2 = Inactive
   const filterOptions = [
     {label: 'All', value: 'all'},
     {label: 'Active', value: {key: 'isActive', val: true}},
