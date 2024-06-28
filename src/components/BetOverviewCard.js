@@ -4,6 +4,7 @@ import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount } from "./qubic/util"
 import MinMaxSpan from "./MinMaxSpan"
 import LabelData from "./LabelData"
+import { sumArray } from "./qubic/util"
 
 function BetOverviewCard({ data, onClick }) {
 
@@ -17,11 +18,15 @@ function BetOverviewCard({ data, onClick }) {
           {data.bet_desc}
         </div>
         <div className="flex justify-between items-center w-full">
-          <LabelData lbl="Expires in" value={data.expires_in} />
-          <LabelData lbl="Slots left" value={data.slotsLeft} />
+          <LabelData lbl="Bet closes at" value={data.close_date + ' ' + data.close_time.slice(0, -3) + ' UTC'} />
+          <LabelData lbl="Slots taken" value={sumArray(data.current_num_selection)} />
           <LabelData 
             lbl="Fee %" 
-            value={<MinMaxSpan values={data} prop={'oracle_fee'} />} 
+            value={sumArray(data.oracle_fee) + ' %'}
+          />
+          <LabelData 
+            lbl="Burning" 
+            value={'2 %'}
           />
         </div>
         <div className="gap-[12px] flex justify-center items-center">

@@ -10,6 +10,7 @@ import MinMaxSpan from '../components/MinMaxSpan'
 import LabelData from '../components/LabelData'
 import { useQubicConnect } from '../components/qubic/connect/QubicConnectContext'
 import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
+import { sumArray } from '../components/qubic/util'
 
 function BetDetailsPage() {
   const { id } = useParams()
@@ -23,7 +24,7 @@ function BetDetailsPage() {
   const { connected, toggleConnectModal, signTx } = useQubicConnect()
 
   const navigate = useNavigate()
-  const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
+  // const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
   // console.log('bet', bet)
 
   const updateAmountOfBetSlots = (value) => {
@@ -54,13 +55,10 @@ function BetDetailsPage() {
               <div className=' flex justify-between items-center w-full'>
                 <div className=' flex flex-col justify-center items-center'>
                   <span className=' font-space text-gray-50 text-[12px] leading-[16px]'>
-                    Expires in
+                    Bet closes at 
                   </span>
-                  <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    {bet.expires_in > 0 && <>
-                      {bet.expires_in} {bet.expires_in === 1 ? 'Day' : 'Days'}                    
-                    </>}
-                    {bet.expires_in === 0 && 'Expired'}
+                  <span className=' font-space text-white text-[16px] leading-[24px]'>                    
+                    {bet.close_date + ' ' + bet.close_time.slice(0, -3) + ' UTC'}
                   </span>
                 </div>
                 <div className=' flex flex-col justify-center items-start'>
@@ -68,7 +66,7 @@ function BetDetailsPage() {
                     Slots taken
                   </span>
                   <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    {sum(bet.current_num_selection)}
+                    {sumArray(bet.current_num_selection)}
                   </span>
                 </div>
                 <div className=' flex flex-col justify-center items-center'>
@@ -76,7 +74,15 @@ function BetDetailsPage() {
                     Fee %
                   </span>
                   <span className=' font-space text-white text-[16px] leading-[24px]'>
-                    <MinMaxSpan values={bet} prop={'oracle_fee'} />
+                    {sumArray(bet.oracle_fee) + ' %'}
+                  </span>
+                </div>
+                <div className=' flex flex-col justify-center items-center'>
+                  <span className=' font-space text-gray-50 text-[12px] leading-[16px]'>
+                    Burning
+                  </span>
+                  <span className=' font-space text-white text-[16px] leading-[24px]'>
+                    2 %
                   </span>
                 </div>
               </div>
@@ -94,9 +100,9 @@ function BetDetailsPage() {
 
               {detailsViewVisible && <div className='w-full'>
                 <div className='grid grid-cols-3'>
-                  <LabelData lbl='Open' value={bet.open_date} />
-                  <LabelData lbl='Close' value={bet.close_date} />
-                  <LabelData lbl='End' value={bet.end_date} />
+                  <LabelData lbl='Open' value={bet.open_date + ' ' + bet.open_time + ' UTC'} />
+                  <LabelData lbl='Close' value={bet.close_date + ' ' + bet.close_time + ' UTC'} />
+                  <LabelData lbl='End' value={bet.end_date + ' ' + bet.end_time + ' UTC'} />
                 </div>                
                 <LabelData lbl='Creator' value={truncateMiddle(bet.creator, 40)} />                
                 <LabelData lbl='Oracle Provider(s)' value={bet.oracle_id.map((id, index) => (
@@ -132,7 +138,7 @@ function BetDetailsPage() {
                   >
                     {option} (
                       {bet.current_num_selection[index]} / {' '}
-                      {calcPercentage(bet.current_num_selection[index], sum(bet.current_num_selection)).toFixed(2)} %)
+                      {calcPercentage(bet.current_num_selection[index], sumArray(bet.current_num_selection)).toFixed(2)} %)
                   </button>
                   <span className='text-white text-[16px] leading-[24px]'>
                     {Number(bet.betting_odds[index]).toFixed(2)}
