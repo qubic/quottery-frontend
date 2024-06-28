@@ -38,7 +38,7 @@ export const BetProvider = ({ children }) => {
         // Ensure days is not negative
         if (days < 0) days = 0
         bet.expires_in = days
-        bet.isActive = now < closeDate
+        bet.isActive = now <= closeDate
       })
       dispatch({ type: 'SET_BETS', payload: data.bet_list })
     }
