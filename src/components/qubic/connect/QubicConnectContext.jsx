@@ -11,7 +11,8 @@ export function QubicConnectProvider({ children }) {
   const [wallet, setWallet] = useState(null)
   const [showConnectModal, setShowConnectModal] = useState(false)
   
-  const httpEndpoint = 'https://rpc.qubic.org' // 'https://api.qubic.world'
+  const httpEndpoint = 'https://api.qubic.world' // test system
+  //const httpEndpoint = 'https://rpc.qubic.org' // live system
   const qHelper = new QubicHelper()
 
   useEffect(() => {
