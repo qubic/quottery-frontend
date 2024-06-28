@@ -22,8 +22,8 @@ export const BetProvider = ({ children }) => {
 
   const fetchBets = async () => {
     setLoading(true)
-    const response = await fetch('https://65.21.185.4:5000/get_active_bets')  // test system
-    // const response = await fetch('https://qb.qubic.org/get_active_bets')   // live system
+    // const response = await fetch('https://65.21.185.4:5000/get_active_bets')  // test system
+    const response = await fetch('https://qb.qubic.org/get_active_bets')   // live system
     const data = await response.json()
 
     if (data.bet_list) {
