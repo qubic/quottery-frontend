@@ -10,3 +10,5 @@ export const truncateMiddle = (str, charsToRemove) => {
   
     return str.slice(0, start) + '...' + str.slice(end)
 }
+
+export const sumArray = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
