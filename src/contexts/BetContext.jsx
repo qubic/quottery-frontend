@@ -14,6 +14,11 @@ const betReducer = (state, action) => {
 export const BetProvider = ({ children }) => {
   const [state, dispatch] = useReducer(betReducer, { bets: [] })
   const [loading, setLoading] = useState(true)
+  
+  const setEndOfDay = (date) => {
+    date.setHours(23, 59, 59, 999)
+    return date
+  }
 
   const fetchBets = async () => {
     setLoading(true)
@@ -31,7 +36,8 @@ export const BetProvider = ({ children }) => {
         bet.current_num_selection = JSON.parse(bet.current_num_selection)
         bet.oracle_vote = JSON.parse(bet.oracle_vote)
         // add an expires_in field to each bet based on open_date and close_date
-        const closeDate = parseDate(bet.close_date)
+        let closeDate = parseDate(bet.close_date)
+        closeDate = setEndOfDay(closeDate)
         const now = new Date()
         const diff = closeDate - now
         let days = Math.floor(diff / (1000 * 60 * 60 * 24))
