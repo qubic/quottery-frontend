@@ -2,7 +2,7 @@ import React from "react"
 import Card from "./qubic/Card"
 import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount } from "./qubic/util"
-import MinMaxSpan from "./MinMaxSpan"
+// import MinMaxSpan from "./MinMaxSpan"
 import LabelData from "./LabelData"
 import { sumArray } from "./qubic/util"
 

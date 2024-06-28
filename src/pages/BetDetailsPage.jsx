@@ -6,7 +6,7 @@ import { useBetContext } from '../contexts/BetContext'
 import Card from '../components/qubic/Card'
 import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount, truncateMiddle } from '../components/qubic/util'
-import MinMaxSpan from '../components/MinMaxSpan'
+// import MinMaxSpan from '../components/MinMaxSpan'
 import LabelData from '../components/LabelData'
 import { useQubicConnect } from '../components/qubic/connect/QubicConnectContext'
 import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
@@ -18,7 +18,7 @@ function BetDetailsPage() {
   const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
   const bet = state.bets.find(bet => bet.bet_id === parseInt(id))
   const [selectedOption, setSelectedOption] = useState(null)
-  const [amountOfBetSlots, setAmountOfBetSlots] = useState(1)
+  const [amountOfBetSlots, setAmountOfBetSlots] = useState(0)
   const [optionCosts, setOptionCosts] = useState(0)
   const [detailsViewVisible, setDetailsViewVisible] = useState(false)
   const { connected, toggleConnectModal, signTx } = useQubicConnect()
