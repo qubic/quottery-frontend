@@ -1,13 +1,23 @@
-import { useState } from "react"
-import Card from "../Card"
-import { useQubicConnect } from "./QubicConnectContext"
+import { useState } from 'react'
+import { QubicVault } from '@qubic-lib/qubic-ts-vault-library'
+import Card from '../Card'
+import { useQubicConnect } from './QubicConnectContext'
 
 const ConnectModal = ({ open, onClose }) => {
 
     const [selectedMode, setSelectedMode] = useState('none')
-    const [privateSeed, setPrivateSeed] = useState('')
+    // Private seed handling
+    const [privateSeed, setPrivateSeed] = useState('')    
     const [errorMsgPrivateSeed, setErrorMsgPrivateSeed] = useState('')
-    const { connect, disconnect, connected } = useQubicConnect()    
+    // Vault file handling
+    const [vault] = useState(new QubicVault())
+    const [selectedFile, setSelectedFile] = useState(null)
+    const [password, setPassword] = useState('')
+    // General connect/disconnect
+    const { connect, disconnect, connected } = useQubicConnect()
+    // account selection
+    const [accounts, setAccounts] = useState([])
+    const [selectedAccount, setSelectedAccount] = useState(0)
 
     const privateKeyConnect = () => {
         connect(privateSeed)
@@ -31,9 +41,51 @@ const ConnectModal = ({ open, onClose }) => {
         setPrivateSeed(pk)
     }
 
-    const vaultFileConnect = () => {
-        console.log('connect with vault file')
+    const vaultFileConnect = async () => {
+        if (!selectedFile || !password) {
+            alert('Please select a file and enter a password.')
+            return
+        }
+      
+        const fileReader = new FileReader()
+      
+        fileReader.onload = async (event) => {
+            try {
+                await vault.importAndUnlock(
+                    true, // selectedFileIsVaultFile: boolean,
+                    password,
+                    null, // selectedConfigFile: File | null = null,
+                    selectedFile, // File | null = null,
+                    true, // unlock: boolean = false
+                )                
+                // now we switch view to select one of the seeds
+                setAccounts(vault.getSeeds())
+                setSelectedMode('account-select')
+            } catch (error) {
+              console.error('Error unlocking vault:', error)
+              alert('Failed to unlock the vault. Please check your password and try again.')
+            }
+        } 
+        
+        fileReader.onerror = (error) => {
+            console.error('Error reading file:', error)
+            alert('Failed to read the file. Please try again.')
+        } 
+
+        fileReader.readAsArrayBuffer(selectedFile)
     }
+
+    const selectAccount = () => {
+        // get the first account of the vault
+        const pkSeed = vault.revealSeed(
+            accounts[parseInt(selectedAccount)].publicId
+        )
+        connect(pkSeed)        
+        onClose() // reset and close
+    }
+
+    const handleFileChange = event => setSelectedFile(event.target.files[0])    
+    const handlePasswordChange = event => setPassword(event.target.value)
 
     return (<>
         {open && <div 
@@ -62,12 +114,12 @@ const ConnectModal = ({ open, onClose }) => {
                             <button 
                                 className="bg-primary-40 p-4 rounded-lg"
                                 onClick={() => setSelectedMode('private-seed')}>Private Seed</button>
-                            <button disabled
-                                className="bg-gray-50 p-4 rounded-lg"
-                                onClick={() => setSelectedMode('vault-file')}>Vault File (coming soon)</button>
+                            <button
+                                className="bg-primary-40 p-4 rounded-lg"
+                                onClick={() => setSelectedMode('vault-file')}>Vault File</button>
                             <button disabled 
                                 className="bg-gray-50 p-4 rounded-lg"
-                                onClick={() => setSelectedMode('metamask')}>Metamask (coming soon)</button>
+                                onClick={() => setSelectedMode('metamask')}>MetaMask (coming soon)</button>
                         </>}                        
                     </div>
                 }
@@ -95,8 +147,12 @@ const ConnectModal = ({ open, onClose }) => {
                 {selectedMode === 'vault-file' && 
                     <div className="text-white mt-4">
                         Load your Qubic vault file:
-                        <input type="file" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" />
-                        <input type="password" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" placeholder="Enter password" />
+                        <input type="file" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
+                            onChange={handleFileChange}
+                        />
+                        <input type="password" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" placeholder="Enter password" 
+                            onChange={handlePasswordChange}
+                        />
                         <div className="grid grid-cols-2 gap-4 mt-4">
                             <button 
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
@@ -104,6 +160,31 @@ const ConnectModal = ({ open, onClose }) => {
                             <button 
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => vaultFileConnect()}>Unlock</button>
+                        </div>
+                    </div>
+                }
+
+                {selectedMode === 'account-select' &&
+                    <div className="text-white mt-4">
+                        Select an account:
+                        <select className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
+                            value={selectedAccount}
+                            onChange={(e) => setSelectedAccount(e.target.value)}
+                        >
+                            {accounts.map((account, idx) => 
+                                <option key={account.publicId} value={idx}>{account.alias}</option>
+                            )}
+                        </select>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <button 
+                                className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
+                                onClick={() => {
+                                    disconnect()
+                                    setSelectedMode('none')                                    
+                                }}>Lock Wallet</button>
+                            <button 
+                                className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
+                                onClick={() => selectAccount()}>Select Account</button>                            
                         </div>
                     </div>
                 }

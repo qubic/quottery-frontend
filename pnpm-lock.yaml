@@ -11,6 +11,9 @@ importers:
       '@qubic-lib/qubic-ts-library':
         specifier: ^0.1.2
         version: 0.1.2
+      '@qubic-lib/qubic-ts-vault-library':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@testing-library/jest-dom':
         specifier: ^5.17.0
         version: 5.17.0
@@ -1077,6 +1080,9 @@ packages:
 
   '@qubic-lib/qubic-ts-library@0.1.2':
     resolution: {integrity: sha512-AUEF9ooEnJgfG64iV2IbdmraTT729orCVlLPNupoOBUXh7FG1T7V1/yu7jobZwG3qUFLWIn8us9HGNGSNH12Mw==}
+
+  '@qubic-lib/qubic-ts-vault-library@1.0.1':
+    resolution: {integrity: sha512-rq+MbKJAhmqIx8ZJn/WDsTYDP5wGZekTGTyFWTIpXxlPTTweTbXIvXmwaPgSStCQkaDLDStMEIugPb23akF88Q==}
 
   '@remix-run/router@1.16.1':
     resolution: {integrity: sha512-es2g3dq6Nb07iFxGk5GuHN20RwBZOsuDQN7izWIisUcv9r+d2C5jQxqmgkdebXgReWfiyUabcki6Fg77mSNrig==}
@@ -6918,6 +6924,8 @@ snapshots:
     dependencies:
       bignumber.js: 9.1.2
       net: 1.0.2
+
+  '@qubic-lib/qubic-ts-vault-library@1.0.1': {}
 
   '@remix-run/router@1.16.1': {}
 
