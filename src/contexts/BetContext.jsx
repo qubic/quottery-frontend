@@ -5,7 +5,10 @@ const BetContext = createContext()
 const betReducer = (state, action) => {
   switch (action.type) {
     case 'SET_BETS':
-      return { ...state, bets: action.payload }
+      return { 
+        ...state, 
+        bets: action.payload 
+      }
     default:
       return state
   }
@@ -14,11 +17,6 @@ const betReducer = (state, action) => {
 export const BetProvider = ({ children }) => {
   const [state, dispatch] = useReducer(betReducer, { bets: [] })
   const [loading, setLoading] = useState(true)
-  
-  // const setEndOfDay = (date) => {
-  //   date.setUTCHours(23, 59, 59, 999)
-  //   return date
-  // }
 
   const fetchBets = async () => {
     setLoading(true)
@@ -36,20 +34,21 @@ export const BetProvider = ({ children }) => {
         bet.current_bet_state = JSON.parse(bet.current_bet_state)
         bet.current_num_selection = JSON.parse(bet.current_num_selection)
         bet.oracle_vote = JSON.parse(bet.oracle_vote)
-        // add an expires_in field to each bet based on open_date and close_date
-        // let closeDate = parseDate(bet.close_date)
         const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z')
-        // console.log('closeDate:', closeDate)
-        // closeDate = setEndOfDay(closeDate)
         const now = new Date()
         bet.isActive = now <= closeDate
+        // add an expires_in field to each bet based on open_date and close_date
         // const diff = closeDate - now
         // let days = Math.floor(diff / (1000 * 60 * 60 * 24))
         // Ensure days is not negative
         // if (days < 0) days = 0
         // bet.expires_in = days        
       })
-      dispatch({ type: 'SET_BETS', payload: data.bet_list })
+      console.log('fetchBets', data)
+      dispatch({ 
+        type: 'SET_BETS', 
+        payload: data.bet_list 
+      })
     }
     setLoading(false)
   }
@@ -58,14 +57,6 @@ export const BetProvider = ({ children }) => {
     fetchBets()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // const parseDate = (dateString) => {
-  //   const [year, month, day] = dateString.split('-').map(Number)
-  //   if (isNaN(year) || isNaN(month) || isNaN(day)) {
-  //     throw new Error('Invalid date format')
-  //   }
-  //   return new Date(year + 2000, month - 1, day)
-  // }
 
   return (
     <BetContext.Provider value={{ state, dispatch, loading, fetchBets }}>
