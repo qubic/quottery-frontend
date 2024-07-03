@@ -10,14 +10,14 @@ function BetOverviewCard({ data, onClick }) {
 
   return (
     <Card 
-      className="p-[24px] h-[210px] hover:border-primary-40 cursor-pointer"
+      className="p-[15px] h-[240px] hover:border-primary-40 cursor-pointer"
       onClick={onClick}
     >
       <div className="flex flex-col items-start justify-start gap-[24px]">
-        <div className="text-white text-16">
+        <div className="text-white text-20">
           {data.bet_desc}
         </div>
-        <div className="flex justify-between items-center w-full">
+        <div className="grid grid-cols-2 justify-between items-center w-full">
           <LabelData lbl="Bet closes at" value={data.close_date + ' ' + data.close_time.slice(0, -3) + ' UTC'} />
           <LabelData lbl="Slots taken" value={sumArray(data.current_num_selection)} />
           <LabelData 
