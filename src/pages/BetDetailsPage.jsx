@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { IoIosArrowDown } from "react-icons/io"
 import clsx from 'clsx'
-import { useBetContext } from '../contexts/BetContext'
+import { useQuotteryContext } from '../contexts/QuotteryContext'
 import Card from '../components/qubic/Card'
 import QubicCoin from "../assets/qubic-coin.svg"
 import { formatQubicAmount, truncateMiddle } from '../components/qubic/util'
@@ -13,7 +13,7 @@ import { sumArray } from '../components/qubic/util'
 
 function BetDetailsPage() {
   const { id } = useParams()
-  const { state } = useBetContext()
+  const { state } = useQuotteryContext()
   const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
   const bet = state.bets.find(bet => bet.bet_id === parseInt(id))
   const [selectedOption, setSelectedOption] = useState(null)
@@ -59,15 +59,15 @@ function BetDetailsPage() {
       <span className='text-[14px] text-gray-50 mt-[-5px]'>
         QUBIC
       </span>
-    </>)      
+    </>)
   }
 
   return (
     <div className='sm:px-30 md:px-130'>
       {!bet && <div className='text-center mt-[105px] text-white'>Loading...</div>}
-      
+
       {bet && bet.bet_id >= 0 && <>
-        
+
         <div className='mt-[10px] px-5 sm:px-20 md:px-100'>
           <div className='p-5 bg-gray-70 mt-[105px] mb-9 rounded-[8px] text-center text-[35px] text-white'>
             {bet.bet_desc}
@@ -77,9 +77,9 @@ function BetDetailsPage() {
               <div className='grid grid-cols-2 md-grid-cols-3 justify-between items-center w-full'>
                 <div className=' flex flex-col justify-center items-center'>
                   <span className=' text-gray-50 text-[12px] leading-[16px]'>
-                    Bet closes at 
+                    Bet closes at
                   </span>
-                  <span className=' text-white text-[16px] leading-[24px]'>                    
+                  <span className=' text-white text-[16px] leading-[24px]'>
                     {bet.close_date + ' ' + bet.close_time.slice(0, -3) + ' UTC'}
                   </span>
                 </div>
@@ -125,11 +125,11 @@ function BetDetailsPage() {
                   <LabelData lbl='Open' value={bet.open_date + ' ' + bet.open_time + ' UTC'} />
                   <LabelData lbl='Close' value={bet.close_date + ' ' + bet.close_time + ' UTC'} />
                   <LabelData lbl='End' value={bet.end_date + ' ' + bet.end_time + ' UTC'} />
-                </div>                
-                <LabelData lbl='Creator' value={truncateMiddle(bet.creator, 40)} />                
+                </div>
+                <LabelData lbl='Creator' value={truncateMiddle(bet.creator, 40)} />
                 <LabelData lbl='Oracle Provider(s)' value={bet.oracle_id.map((id, index) => (
                   <span className='block' key={index}>{truncateMiddle(id, 40)}</span>
-                ))} />                
+                ))} />
               </div>}
 
               <button className='flex w-full items-center text-14 text-primary-40'
@@ -150,10 +150,10 @@ function BetDetailsPage() {
             {bet && bet.option_desc && bet.option_desc.map((option, index) => {
               return (
                 <div className='flex items-center gap-4' key={index}>
-                  <button 
+                  <button
                     key={index}
                     className={clsx(
-                      'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40', 
+                      'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40',
                       selectedOption === index && 'bg-success-40'
                     )}
                     onClick={() => setSelectedOption(index)}
@@ -170,23 +170,23 @@ function BetDetailsPage() {
             })}
           </Card>
           {selectedOption === null && <div className='mb-40'></div>}
-          {selectedOption >= 0 && 
-            <Card className='p-[24px] w-full mt-[16px] mb-40'>              
+          {selectedOption >= 0 &&
+            <Card className='p-[24px] w-full mt-[16px] mb-40'>
               <span className=' font-space text-gray-50 text-[12px] leading-[16px] block mb-3'>
                 How many Bet Slots you want to buy?
               </span>
-              <div className='grid'>                
-                <button 
+              <div className='grid'>
+                <button
                   className='bg-[rgba(26,222,245,0.1)] text-primary-40 text-20 font-bold py-3'
                   onClick={incAmountOfBetSlots}
                 >+</button>
-                <input 
+                <input
                   className='py-3 text-[25px] text-center'
                   type='number'
                   value={amountOfBetSlots}
                   onChange={(e) => updateAmountOfBetSlots(e.target.value)}
                 />
-                <button 
+                <button
                   className='bg-[rgba(26,222,245,0.1)] text-primary-40 text-20 font-bold py-3'
                   onClick={decAmountOfBetSlots}
                 >-</button>
@@ -201,26 +201,26 @@ function BetDetailsPage() {
                 onClick={() => updateAmountOfBetSlots(bet.max_slot_per_option)}
               >
                 Go for Max ({bet.max_slot_per_option})
-              </span>         
+              </span>
             </Card>
           }
         </div>
 
         {/** Bet Now button */}
         <div className='
-          fixed h-[78px] flex w-full z-5 bottom-0 gap-3 
+          fixed h-[78px] flex w-full z-5 bottom-0 gap-3
           border-t border-solid border-gray-70 bg-gray-90
-        '>  
+        '>
           <button className='bg-[rgba(26,222,245,0.1)] flex-none py-[8px] px-[16px] text-[14px] text-primary-40 font-space'
             onClick={() => navigate('/')}
           >
             Cancel
-          </button>      
+          </button>
           <div className='flex-1 flex flex-col justify-center text-center'>
             <BetOptionCosts costs={optionCosts} />
           </div>
           {optionCosts > 0 && <>
-            <button 
+            <button
               className='flex-none bg-primary-40 py-[8px] px-10 text-18 font-bold'
               onClick={() => {
                 if(connected) {
@@ -233,13 +233,13 @@ function BetDetailsPage() {
               {connected ? 'Bet!' : 'Bet!'}
             </button>
           </>}
-          <ConfirmTxModal 
-            open={showConfirmTxModal} 
+          <ConfirmTxModal
+            open={showConfirmTxModal}
             onClose={() => setShowConfirmTxModal(false)}
             tx={{
-              title: 'Bet Now', 
+              title: 'Bet Now',
               description: 'Are you sure you want to bet now?'
-            }} 
+            }}
             onConfirm={async () => {
               const confirmed = await signTx({
                 betId: bet.bet_id,
@@ -248,8 +248,8 @@ function BetDetailsPage() {
                 amountPerSlot: bet.amount_per_bet_slot
               })
               return confirmed
-            }} 
-          />          
+            }}
+          />
         </div>
       </>}
     </div>

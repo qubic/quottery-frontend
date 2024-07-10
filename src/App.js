@@ -6,12 +6,12 @@ import StartPage from './pages/StartPage'
 import BetDetailsPage from './pages/BetDetailsPage'
 import './App.css'
 import { QubicConnectProvider } from './components/qubic/connect/QubicConnectContext'
-import { BetProvider } from './contexts/BetContext'
+import { QuotteryProvider } from './contexts/QuotteryContext'
 import Footer from './components/layout/Footer'
 
 function App() {
   return (
-    <BetProvider>
+    <QuotteryProvider>
       <QubicConnectProvider>
         <BrowserRouter>
           <Header />
@@ -26,7 +26,7 @@ function App() {
           <Footer />
         </BrowserRouter>
       </QubicConnectProvider>
-    </BetProvider>
+    </QuotteryProvider>
   )
 }
 

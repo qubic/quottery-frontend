@@ -1,27 +1,28 @@
 import React, { createContext, useReducer, useContext, useEffect, useState } from 'react'
 
-const BetContext = createContext()
+const QuotteryContext = createContext()
 
 const betReducer = (state, action) => {
   switch (action.type) {
     case 'SET_BETS':
-      return { 
-        ...state, 
-        bets: action.payload 
+      return {
+        ...state,
+        bets: action.payload
       }
     default:
       return state
   }
 }
 
-export const BetProvider = ({ children }) => {
+export const QuotteryProvider = ({ children }) => {
   const [state, dispatch] = useReducer(betReducer, { bets: [] })
   const [loading, setLoading] = useState(true)
+  const [betsFilter, setBetsFilter] = useState('active')
 
-  const fetchBets = async () => {
+  const fetchBets = async (filter) => {
     setLoading(true)
-    // const response = await fetch('https://qbtn.qubic.org/get_active_bets')  // test system
-    const response = await fetch('https://qb.qubic.org/get_active_bets')   // live system
+    const response = await fetch(`https://qbtn.qubic.org/get_${filter}_bets`)   // test system
+    // const response = await fetch(`https://qbtn.qubic.org/get_${filter}_bets`)   // live system
     const data = await response.json()
 
     if (data.bet_list) {
@@ -42,27 +43,29 @@ export const BetProvider = ({ children }) => {
         // let days = Math.floor(diff / (1000 * 60 * 60 * 24))
         // Ensure days is not negative
         // if (days < 0) days = 0
-        // bet.expires_in = days        
+        // bet.expires_in = days
       })
       console.log('fetchBets', data)
-      dispatch({ 
-        type: 'SET_BETS', 
-        payload: data.bet_list 
+      dispatch({
+        type: 'SET_BETS',
+        payload: data.bet_list
       })
     }
     setLoading(false)
   }
 
   useEffect(() => {
-    fetchBets()
+    fetchBets(betsFilter)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [betsFilter])
 
   return (
-    <BetContext.Provider value={{ state, dispatch, loading, fetchBets }}>
+    <QuotteryContext.Provider value={{
+        state, dispatch, loading, fetchBets, setBetsFilter
+      }}>
       {children}
-    </BetContext.Provider>
+    </QuotteryContext.Provider>
   )
 }
 
-export const useBetContext = () => useContext(BetContext)
+export const useQuotteryContext = () => useContext(QuotteryContext)
