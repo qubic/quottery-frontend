@@ -62,6 +62,16 @@ function BetDetailsPage() {
     </>)
   }
 
+  const calculateOptionPercentage = (b, idx) => {
+    // check if b.current_num_selection is not all 0
+    if (b.current_num_selection.every(num => num === 0)) return ''
+    // valid value
+    return `(
+      ${b.current_num_selection[idx]} /
+      ${calcPercentage(b.current_num_selection[idx], sumArray(b.current_num_selection)).toFixed(2)}
+    %)`
+  }
+
   return (
     <div className='sm:px-30 md:px-130'>
       {!bet && <div className='text-center mt-[105px] text-white'>Loading...</div>}
@@ -130,9 +140,7 @@ function BetDetailsPage() {
                     )}
                     onClick={() => setSelectedOption(index)}
                   >
-                    {option} (
-                      {bet.current_num_selection[index]} / {' '}
-                      {calcPercentage(bet.current_num_selection[index], sumArray(bet.current_num_selection)).toFixed(2)} %)
+                    {option} {calculateOptionPercentage(bet, index)}
                   </button>
                   <span className='text-white text-[16px] leading-[24px]'>
                     {Number(bet.betting_odds[index]).toFixed(2)}
