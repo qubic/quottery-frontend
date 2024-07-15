@@ -150,7 +150,7 @@ function BetDetailsPage() {
             })}
           </Card>
           {selectedOption === null && <div className='mb-40'></div>}
-          {selectedOption >= 0 &&
+          {selectedOption !== null &&
             <Card className='p-[24px] w-full mt-[16px] mb-40'>
               <span className=' font-space text-gray-50 text-[12px] leading-[16px] block mb-3'>
                 How many Bet Slots you want to buy?
