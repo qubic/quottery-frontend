@@ -100,10 +100,6 @@ const ConnectModal = ({ open, onClose }) => {
             <Card className="relative p-8 w-full max-w-md m-auto flex-col flex" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center">
                   <img src={QubicConnectLogo} alt="Qubic Connect Logo" className="h-6" />
-                    {/* <div className="text-2xl text-white">
-                        qubic <span className="text-primary-40">connect</span>
-                    </div>
-                    <button onClick={onClose} className="text-2xl text-white">X</button> */}
                   <img src={CloseIcon} onClick={onClose} alt="Close Modal Icon" className="w-5 h-5 cursor-pointer" />
                 </div>
 
