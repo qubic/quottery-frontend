@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { QubicVault } from '@qubic-lib/qubic-ts-vault-library'
 import Card from '../Card'
 import { useQubicConnect } from './QubicConnectContext'
+import QubicConnectLogo from '../../../assets/qubic-connect.svg'
+import CloseIcon from '../../../assets/close.svg'
 
 const ConnectModal = ({ open, onClose }) => {
 
     const [selectedMode, setSelectedMode] = useState('none')
     // Private seed handling
-    const [privateSeed, setPrivateSeed] = useState('')    
+    const [privateSeed, setPrivateSeed] = useState('')
     const [errorMsgPrivateSeed, setErrorMsgPrivateSeed] = useState('')
     // Vault file handling
     const [vault] = useState(new QubicVault())
@@ -26,7 +28,7 @@ const ConnectModal = ({ open, onClose }) => {
         setPrivateSeed('')
         onClose()
     }
-    
+
     // check if input is valid seed (55 chars and only lowercase letters)
     const privateKeyValidate = (pk) => {
         if (pk.length !== 55) {
@@ -46,9 +48,9 @@ const ConnectModal = ({ open, onClose }) => {
             alert('Please select a file and enter a password.')
             return
         }
-      
+
         const fileReader = new FileReader()
-      
+
         fileReader.onload = async (event) => {
             try {
                 await vault.importAndUnlock(
@@ -57,7 +59,7 @@ const ConnectModal = ({ open, onClose }) => {
                     null, // selectedConfigFile: File | null = null,
                     selectedFile, // File | null = null,
                     true, // unlock: boolean = false
-                )                
+                )
                 // now we switch view to select one of the seeds
                 setAccounts(vault.getSeeds())
                 setSelectedMode('account-select')
@@ -65,12 +67,12 @@ const ConnectModal = ({ open, onClose }) => {
               console.error('Error unlocking vault:', error)
               alert('Failed to unlock the vault. Please check your password and try again.')
             }
-        } 
-        
+        }
+
         fileReader.onerror = (error) => {
             console.error('Error reading file:', error)
             alert('Failed to read the file. Please try again.')
-        } 
+        }
 
         fileReader.readAsArrayBuffer(selectedFile)
     }
@@ -80,84 +82,86 @@ const ConnectModal = ({ open, onClose }) => {
         const pkSeed = vault.revealSeed(
             accounts[parseInt(selectedAccount)].publicId
         )
-        connect(pkSeed)        
+        connect(pkSeed)
         onClose() // reset and close
     }
 
-    const handleFileChange = event => setSelectedFile(event.target.files[0])    
+    const handleFileChange = event => setSelectedFile(event.target.files[0])
     const handlePasswordChange = event => setPassword(event.target.value)
 
     return (<>
-        {open && <div 
+        {open && <div
             className="w-full p-5 h-full fixed top-0 left-0 overflow-x-hidden overflow-y-auto z-50 bg-smoke-light flex"
-            onClick={() => {                
+            onClick={() => {
                 setSelectedMode('none')
                 onClose()
             }}
         >
             <Card className="relative p-8 w-full max-w-md m-auto flex-col flex" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center">
-                    <div className="text-2xl text-white">
+                  <img src={QubicConnectLogo} alt="Qubic Connect Logo" className="h-6" />
+                    {/* <div className="text-2xl text-white">
                         qubic <span className="text-primary-40">connect</span>
                     </div>
-                    <button onClick={onClose} className="text-2xl text-white">X</button>
+                    <button onClick={onClose} className="text-2xl text-white">X</button> */}
+                  <img src={CloseIcon} onClick={onClose} alt="Close Modal Icon" className="w-5 h-5 cursor-pointer" />
                 </div>
-                
-                {selectedMode === 'none' && 
+
+                {selectedMode === 'none' &&
                     <div className="flex flex-col gap-4 mt-4">
                         {connected &&
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => disconnect()}>Lock Wallet</button>
                         }
                         {!connected && <>
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 rounded-lg"
                                 onClick={() => setSelectedMode('private-seed')}>Private Seed</button>
                             <button
                                 className="bg-primary-40 p-4 rounded-lg"
                                 onClick={() => setSelectedMode('vault-file')}>Vault File</button>
-                            <button disabled 
+                            <button disabled
                                 className="bg-gray-50 p-4 rounded-lg"
                                 onClick={() => setSelectedMode('metamask')}>MetaMask (coming soon)</button>
-                        </>}                        
+                        </>}
                     </div>
                 }
-                
-                {selectedMode === 'private-seed' && 
+
+                {selectedMode === 'private-seed' &&
                     <div className="text-white mt-4">
                         Your 55 character private key (seed):
-                        <input 
-                            type="text" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
+                        <input
+                            type="text" className="w-full p-4 mt-4 bg-gray-50 rounded-lg"
                             value={privateSeed}
                             onChange={(e) => privateKeyValidate(e.target.value)}
                         />
                         {errorMsgPrivateSeed && <p className="text-red-500">{errorMsgPrivateSeed}</p>}
                         <div className="grid grid-cols-2 gap-4 mt-4">
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => setSelectedMode('none')}>Cancel</button>
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => privateKeyConnect()}>Unlock</button>
                         </div>
                     </div>
                 }
 
-                {selectedMode === 'vault-file' && 
+                {selectedMode === 'vault-file' &&
                     <div className="text-white mt-4">
                         Load your Qubic vault file:
-                        <input type="file" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
+                        <input type="file" className="w-full p-4 mt-4 bg-gray-50 rounded-lg"
                             onChange={handleFileChange}
                         />
-                        <input type="password" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" placeholder="Enter password" 
+                        <input type="password" className="w-full p-4 mt-4 bg-gray-50 rounded-lg" placeholder="Enter password"
                             onChange={handlePasswordChange}
                         />
                         <div className="grid grid-cols-2 gap-4 mt-4">
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => setSelectedMode('none')}>Cancel</button>
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => vaultFileConnect()}>Unlock</button>
                         </div>
@@ -167,24 +171,24 @@ const ConnectModal = ({ open, onClose }) => {
                 {selectedMode === 'account-select' &&
                     <div className="text-white mt-4">
                         Select an account:
-                        <select className="w-full p-4 mt-4 bg-gray-50 rounded-lg" 
+                        <select className="w-full p-4 mt-4 bg-gray-50 rounded-lg"
                             value={selectedAccount}
                             onChange={(e) => setSelectedAccount(e.target.value)}
                         >
-                            {accounts.map((account, idx) => 
+                            {accounts.map((account, idx) =>
                                 <option key={account.publicId} value={idx}>{account.alias}</option>
                             )}
                         </select>
                         <div className="grid grid-cols-2 gap-4 mt-4">
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
                                 onClick={() => {
                                     disconnect()
-                                    setSelectedMode('none')                                    
+                                    setSelectedMode('none')
                                 }}>Lock Wallet</button>
-                            <button 
+                            <button
                                 className="bg-primary-40 p-4 mt-4 rounded-lg text-black"
-                                onClick={() => selectAccount()}>Select Account</button>                            
+                                onClick={() => selectAccount()}>Select Account</button>
                         </div>
                     </div>
                 }
