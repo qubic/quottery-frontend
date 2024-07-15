@@ -191,7 +191,7 @@ function BetDetailsPage() {
           fixed h-[78px] flex w-full z-5 bottom-0 gap-3
           border-t border-solid border-gray-70 bg-gray-90
         '>
-          <button className='bg-[rgba(26,222,245,0.1)] flex-none py-[8px] px-[16px] text-[14px] text-primary-40 font-space'
+          <button className='bg-[rgba(26,222,245,0.1)] flex-none py-[8px] px-[16px] text-18 text-primary-40 font-space'
             onClick={() => navigate('/')}
           >
             Cancel
@@ -199,20 +199,20 @@ function BetDetailsPage() {
           <div className='flex-1 flex flex-col justify-center text-center'>
             <BetOptionCosts costs={optionCosts} />
           </div>
-          {optionCosts > 0 && <>
-            <button
-              className='flex-none bg-primary-40 py-[8px] px-10 text-18 font-bold'
-              onClick={() => {
-                if(connected) {
-                  setShowConfirmTxModal(true)
-                }else{
-                  toggleConnectModal()
-                }
-              }}
-            >
-              {connected ? 'Bet!' : 'Bet!'}
-            </button>
-          </>}
+          <button
+            className='flex-none bg-primary-40 py-[8px] px-10 text-18 disabled:bg-slate-50 disabled:text-gray-50'
+            onClick={() => {
+              if(connected) {
+                setShowConfirmTxModal(true)
+              }else{
+                toggleConnectModal()
+              }
+            }}
+            disabled={optionCosts === 0}
+          >
+            {connected ? 'Bet!' : 'Bet!'}
+          </button>
+
           <ConfirmTxModal
             open={showConfirmTxModal}
             onClose={() => setShowConfirmTxModal(false)}
