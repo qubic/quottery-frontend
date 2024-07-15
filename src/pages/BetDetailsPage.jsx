@@ -75,45 +75,17 @@ function BetDetailsPage() {
           <Card className='p-[24px] w-full'>
             <div className='flex flex-col items-start justify-start gap-4'>
               <div className='grid grid-cols-2 md-grid-cols-3 justify-between items-center w-full'>
-                <div className=' flex flex-col justify-center items-center'>
-                  <span className=' text-gray-50 text-[12px] leading-[16px]'>
-                    Bet closes at
-                  </span>
-                  <span className=' text-white text-[16px] leading-[24px]'>
-                    {bet.close_date + ' ' + bet.close_time.slice(0, -3) + ' UTC'}
-                  </span>
-                </div>
-                <div className=' flex flex-col justify-center items-center'>
-                  <span className=' text-gray-50 text-[12px] leading-[16px]'>
-                    Slots taken
-                  </span>
-                  <span className=' text-white text-[16px] leading-[24px]'>
-                    {sumArray(bet.current_num_selection)}
-                  </span>
-                </div>
-                <div className=' flex flex-col justify-center items-center'>
-                  <span className=' text-gray-50 text-[12px] leading-[16px]'>
-                    Fee %
-                  </span>
-                  <span className=' text-white text-[16px] leading-[24px]'>
-                    {sumArray(bet.oracle_fee) + ' %'}
-                  </span>
-                </div>
-                <div className=' flex flex-col justify-center items-center'>
-                  <span className=' text-gray-50 text-[12px] leading-[16px]'>
-                    Burning
-                  </span>
-                  <span className=' text-white text-[16px] leading-[24px]'>
-                    2 %
-                  </span>
-                </div>
+                <LabelData lbl="Bet closes at" value={bet.close_date + ' ' + bet.close_time.slice(0, -3) + ' UTC'} />
+                <LabelData lbl="Slots taken" value={sumArray(bet.current_num_selection)} />
+                <LabelData lbl="Fee %" value={sumArray(bet.oracle_fee) + ' %'} />
+                <LabelData lbl="Burning" value={'2 %'} />
               </div>
-              <div>
+              <div className=' flex flex-col justify-center items-center size-full'>
                 <span className=' text-gray-50 text-[12px] leading-[16px]'>
                   In the pot
                 </span>
                 <div className=' gap-[12px] flex justify-center items-center'>
-                  <img src={QubicCoin} alt='' />
+                  <img src={QubicCoin} alt='Icon of a Qubic coin' />
                   <span className='text-white text-[18px] leading-[23px]'>
                     {formatQubicAmount(bet.current_total_qus)} QUBIC
                   </span>
