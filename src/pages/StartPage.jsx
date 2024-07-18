@@ -44,7 +44,7 @@ function StartPage() {
         grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3
         justify-center items-center gap-[16px]
         mt-[16px] mb-[100px]
-        px-5 sm:px-20 md:px-100
+        px-5 sm:px-20
       '>
         {loading && <div>Loading...</div>}
 
