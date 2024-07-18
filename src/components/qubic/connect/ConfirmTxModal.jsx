@@ -50,7 +50,7 @@ const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
     }, [tick, confirmedTx, initialTick, fetchBets, onClose])
 
     const startTickFetchInterval = async (cTx) => {
-        cTx.targetTick = cTx.targetTick + 8
+        cTx.targetTick = cTx.targetTick + 2 // Add 2 to target tick to make sure backend fetches data
         // Fetch initial tick value
         const initialTickValue = await getTick()
         setInitialTick(initialTickValue)

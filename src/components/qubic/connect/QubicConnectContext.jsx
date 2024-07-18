@@ -10,7 +10,7 @@ export function QubicConnectProvider({ children }) {
   const [connected, setConnected] = useState(false)
   const [wallet, setWallet] = useState(null)
   const [showConnectModal, setShowConnectModal] = useState(false)
-  
+
   // const httpEndpoint = 'https://api.qubic.world' // test system
   const httpEndpoint = 'https://rpc.qubic.org' // live system
   const qHelper = new QubicHelper()
@@ -47,10 +47,10 @@ export function QubicConnectProvider({ children }) {
   const signTx = async (bet) => {
     const idPackage = await qHelper.createIdPackage(wallet)
     console.log('id', idPackage)
-    const qCrypto = await Crypto    
+    const qCrypto = await Crypto
     // console.log(qHelper.privateKey(wallet, 0, qCrypto.K12))
     const tick = await getTick()
-    const tickOffset = 20
+    const tickOffset = 5
     console.log('tick:', tick + tickOffset)
     // build Quottery TX
     const quotteryTxSize = qHelper.TRANSACTION_SIZE + 16
@@ -83,7 +83,7 @@ export function QubicConnectProvider({ children }) {
     txView.setUint16(offset, 2, true) // inputType for join bet is 2
     offset += 2;
     txView.setUint16(offset, 16, true); // inputSize for Quottery is 16
-    offset += 2;    
+    offset += 2;
     //
     // add Quottery specific data
     //
@@ -130,7 +130,7 @@ export function QubicConnectProvider({ children }) {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      const result = await response.json()      
+      const result = await response.json()
       return result
     } catch (error) {
       console.error('Error:', error)
@@ -149,8 +149,8 @@ export function QubicConnectProvider({ children }) {
   }
 
   return (
-    <QubicConnectContext.Provider value={{ 
-      connected, wallet, showConnectModal, 
+    <QubicConnectContext.Provider value={{
+      connected, wallet, showConnectModal,
       connect, disconnect, toggleConnectModal,
       signTx, getTick
     }}>
