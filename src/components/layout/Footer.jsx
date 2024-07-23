@@ -9,7 +9,7 @@ const Footer = () => {
   // if the current route is not '/bet/:id', render the footer
   if(pathname.indexOf('/bet/') === -1) {
     return (
-      <div className="px-5 sm:px-20 md:px-100 py-16 flex flex-col sm:flex-row items-center sm:justify-center sm:items-end gap-10">
+      <div className="px-5 sm:px-20 md:px-100 py-16 flex flex-col sm:flex-row items-center sm:justify-center sm:items-center gap-10">
         <div className="flex gap-10">
           <img src={logoShort} alt="logo-short" />
           <span className="text-gray-50 text-12 leading-18 font-space">
