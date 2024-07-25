@@ -129,7 +129,7 @@ function BetDetailsPage() {
           {/*
             Bet still open for betting, choose a option.
           */}
-          {bet && bet.result === -1 &&
+          {bet && bet.result === -1 && bet.is_active &&
             <Card className='p-[24px] w-full mt-[16px]'>
               <span className='font-space text-gray-50 text-[12px] leading-[16px] mb-3 block'>
                 Decide for your bet
@@ -179,6 +179,17 @@ function BetDetailsPage() {
                   </div>
                 )
               })}
+            </Card>
+          }
+
+          {/*
+            We have no result for this bet.
+          */}
+          {bet && bet.result === -1 && !bet.is_active &&
+            <Card className='p-[24px] w-full mt-[16px]'>
+              <span className='font-space text-gray-50 text-[12px] text-center leading-[16px] block'>
+                We have no result for this bet yet.
+              </span>
             </Card>
           }
 

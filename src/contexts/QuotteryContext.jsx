@@ -37,7 +37,7 @@ export const QuotteryProvider = ({ children }) => {
         bet.oracle_vote = JSON.parse(bet.oracle_vote)
         const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z')
         const now = new Date()
-        bet.isActive = now <= closeDate
+        bet.is_active = now <= closeDate
         // add an expires_in field to each bet based on open_date and close_date
         // const diff = closeDate - now
         // let days = Math.floor(diff / (1000 * 60 * 60 * 24))
