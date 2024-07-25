@@ -125,30 +125,63 @@ function BetDetailsPage() {
               </button>
             </div>
           </Card>
-          <Card className='p-[24px] w-full mt-[16px]'>
-            <span className='font-space text-gray-50 text-[12px] leading-[16px] mb-3 block'>
-              Decide for your bet
-            </span>
-            {bet && bet.option_desc && bet.option_desc.map((option, index) => {
-              return (
-                <div className='flex items-center gap-4' key={index}>
-                  <button
-                    key={index}
-                    className={clsx(
-                      'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40',
-                      selectedOption === index && 'bg-success-40'
-                    )}
-                    onClick={() => setSelectedOption(index)}
-                  >
-                    {option} {calculateOptionPercentage(bet, index)}
-                  </button>
-                  <span className='text-white text-[16px] leading-[24px]'>
-                    {Number(bet.betting_odds[index]).toFixed(2)}
-                  </span>
-                </div>
-              )
-            })}
-          </Card>
+
+          {/*
+            Bet still open for betting, choose a option.
+          */}
+          {bet && bet.result === -1 &&
+            <Card className='p-[24px] w-full mt-[16px]'>
+              <span className='font-space text-gray-50 text-[12px] leading-[16px] mb-3 block'>
+                Decide for your bet
+              </span>
+              {bet.option_desc && bet.option_desc.map((option, index) => {
+                return (
+                  <div className='flex items-center gap-4' key={index}>
+                    <button
+                      key={index}
+                      className={clsx(
+                        'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40',
+                        selectedOption === index && 'bg-success-40'
+                      )}
+                      onClick={() => setSelectedOption(index)}
+                    >
+                      {option} {calculateOptionPercentage(bet, index)}
+                    </button>
+                    <span className='text-white text-[16px] leading-[24px]'>
+                      {Number(bet.betting_odds[index]).toFixed(2)}
+                    </span>
+                  </div>
+                )
+              })}
+            </Card>
+          }
+
+          {/*
+            We already have a result for this bet.
+          */}
+          {bet && bet.result !== -1 &&
+            <Card className='p-[24px] w-full mt-[16px]'>
+              <span className='font-space text-gray-50 text-[12px] leading-[16px] mb-3 block'>
+                Bet Result
+              </span>
+              {bet.option_desc && bet.option_desc.map((option, index) => {
+                return (
+                  <div className='flex items-center gap-4 w-full' key={index}>
+                    <span className={clsx(
+                        'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-lg w-full bg-success-40',
+                        bet.result != index && 'bg-grey'
+                      )}>
+                      {option} {calculateOptionPercentage(bet, index)}
+                    </span>
+                    <span className='text-white text-[16px] leading-[24px]'>
+                      {Number(bet.betting_odds[index]).toFixed(2)}
+                    </span>
+                  </div>
+                )
+              })}
+            </Card>
+          }
+
           {selectedOption === null && <div className='mb-40'></div>}
           {selectedOption !== null &&
             <Card className='p-[24px] w-full mt-[16px] mb-40'>
