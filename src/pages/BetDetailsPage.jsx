@@ -169,7 +169,7 @@ function BetDetailsPage() {
                   <div className='flex items-center gap-4 w-full' key={index}>
                     <span className={clsx(
                         'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-lg w-full bg-success-40',
-                        bet.result != index && 'bg-grey'
+                        bet.result !== index && 'bg-grey'
                       )}>
                       {option} {calculateOptionPercentage(bet, index)}
                     </span>
