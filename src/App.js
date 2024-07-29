@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom"
 import Header from './components/layout/Header'
 import StartPage from './pages/StartPage'
 import BetDetailsPage from './pages/BetDetailsPage'
+import BetCreatePage from './pages/BetCreatePage'
 import './App.css'
 import { QubicConnectProvider } from './components/qubic/connect/QubicConnectContext'
 import { QuotteryProvider } from './contexts/QuotteryContext'
@@ -21,6 +22,9 @@ function App() {
             </Route>
             <Route>
               <Route path="/bet/:id" element={<BetDetailsPage />} />
+            </Route>
+            <Route>
+              <Route path="/create" element={<BetCreatePage />} />
             </Route>
           </Routes>
           <Footer />
