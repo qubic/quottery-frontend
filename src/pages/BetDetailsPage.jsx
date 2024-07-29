@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { IoIosArrowDown } from "react-icons/io"
-import clsx from 'clsx'
 import { useQuotteryContext } from '../contexts/QuotteryContext'
 import Card from '../components/qubic/Card'
 import QubicCoin from "../assets/qubic-coin.svg"
@@ -118,9 +117,7 @@ function BetDetailsPage() {
                 onClick={() => toggleDetailsView()}
               >
                 <span className='flex-1'></span>
-                <IoIosArrowDown className={
-                  clsx('flex-none mr-1', detailsViewVisible && 'transform rotate-180')
-                } />
+                <IoIosArrowDown className={'flex-none mr-1 ' + (detailsViewVisible ? 'transform rotate-180' : '')} />
                 <span className='flex-none'>Details</span>
               </button>
             </div>
@@ -139,10 +136,9 @@ function BetDetailsPage() {
                   <div className='flex items-center gap-4' key={index}>
                     <button
                       key={index}
-                      className={clsx(
-                        'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full bg-primary-40',
-                        selectedOption === index && 'bg-success-40'
-                      )}
+                      className={'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-[8px] w-full ' +
+                        (selectedOption === index ? 'bg-success-40' : 'bg-primary-40')
+                      }
                       onClick={() => setSelectedOption(index)}
                     >
                       {option} {calculateOptionPercentage(bet, index)}
@@ -167,10 +163,9 @@ function BetDetailsPage() {
               {bet.option_desc && bet.option_desc.map((option, index) => {
                 return (
                   <div className='flex items-center gap-4 w-full' key={index}>
-                    <span className={clsx(
-                        'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-lg w-full bg-success-40',
-                        bet.result != index && 'bg-grey'
-                      )}>
+                    <span className={'py-[8px] px-[16px] mb-2 text-[14px] font-space rounded-lg w-full ' +
+                      (bet.result === index ? 'bg-success-40' : 'bg-grey')}
+                    >
                       {option} {calculateOptionPercentage(bet, index)}
                     </span>
                     <span className='text-white text-[16px] leading-[24px]'>
