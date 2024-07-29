@@ -22,7 +22,7 @@ export const QuotteryProvider = ({ children }) => {
   const fetchBets = async (filter) => {
     setLoading(true)
     // const response = await fetch(`https://qbtn.qubic.org/get_${filter}_bets`)   // test system
-    const response = await fetch(`https://qb.qubic.org/get_${filter}_bets`)   // live system 
+    const response = await fetch(`https://qb.qubic.org/get_${filter}_bets`)   // live system
     const data = await response.json()
 
     if (data.bet_list) {
