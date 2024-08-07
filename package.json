@@ -1,6 +1,6 @@
 {
   "name": "quottery-frontend",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@qubic-lib/qubic-ts-library": "^0.1.2",
@@ -20,7 +20,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "version": "auto-changelog -p"
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +42,7 @@
     ]
   },
   "devDependencies": {
+    "auto-changelog": "^2.4.0",
     "tailwindcss": "^3.4.3"
   }
 }
