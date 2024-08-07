@@ -16,7 +16,7 @@ function BetCreatePage() {
   const navigate = useNavigate()
   const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
   const { connected, toggleConnectModal } = useQubicConnect()
-  const { fetchBets, signIssueBetTx, createTestBet } = useQuotteryContext()
+  const { fetchBets, signIssueBetTx } = useQuotteryContext()
 
   const [bet, setBet] = useState({
     description: '',
@@ -167,14 +167,6 @@ function BetCreatePage() {
             ref={maxBetSlotsRef}
             onChange={handleMaxBetSlotsChange}
           />
-
-          <button className='bg-primary-40 p-4 rounded-lg'
-            onClick={(e) => {
-              e.preventDefault()
-              createTestBet()
-          }}>
-              Test Bet
-          </button>
 
           {/* Create Bet button */}
           <div>
