@@ -5,14 +5,15 @@ import { QubicHelper } from '@qubic-lib/qubic-ts-library/dist/qubicHelper'
 import Crypto from '@qubic-lib/qubic-ts-library/dist/crypto'
 
 const QubicConnectContext = createContext()
+// TODO move to config
+export const httpEndpoint = 'https://api.qubic.world' // test system
+// export const httpEndpoint = 'https://rpc.qubic.org' // live system
 
 export function QubicConnectProvider({ children }) {
   const [connected, setConnected] = useState(false)
   const [wallet, setWallet] = useState(null)
   const [showConnectModal, setShowConnectModal] = useState(false)
 
-  // const httpEndpoint = 'https://api.qubic.world' // test system
-  const httpEndpoint = 'https://rpc.qubic.org' // live system
   const qHelper = new QubicHelper()
 
   useEffect(() => {
@@ -152,7 +153,7 @@ export function QubicConnectProvider({ children }) {
     <QubicConnectContext.Provider value={{
       connected, wallet, showConnectModal,
       connect, disconnect, toggleConnectModal,
-      signTx, getTick
+      signTx, getTick, broadcastTx
     }}>
       {children}
     </QubicConnectContext.Provider>

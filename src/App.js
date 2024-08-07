@@ -12,8 +12,8 @@ import Footer from './components/layout/Footer'
 
 function App() {
   return (
-    <QuotteryProvider>
-      <QubicConnectProvider>
+    <QubicConnectProvider>
+      <QuotteryProvider>
         <BrowserRouter>
           <Header />
           <Routes>
@@ -29,8 +29,8 @@ function App() {
           </Routes>
           <Footer />
         </BrowserRouter>
-      </QubicConnectProvider>
-    </QuotteryProvider>
+      </QuotteryProvider>
+    </QubicConnectProvider>
   )
 }
 

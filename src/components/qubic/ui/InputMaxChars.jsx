@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 
-const InputMaxChars = ({ id, label, max, placeholder, initialValue = '', onChange }) => {
+const InputMaxChars = forwardRef(({ id, label, max, placeholder, initialValue = '', onChange }, ref) => {
   const [value, setValue] = useState(initialValue);
   const [numChars, setNumChars] = useState(initialValue.length);
+  const [error, setError] = useState('');
 
   const handleChange = (event) => {
     const newValue = event.target.value;
-    if (newValue.length <= max) {
-      setValue(newValue);
+    if (newValue.length > max) {
+      setError(`Maximum ${max} characters allowed`);
+    } else {
+      setError('');
       setNumChars(newValue.length);
+      setValue(newValue);
       onChange(newValue);
     }
   };
@@ -17,6 +21,21 @@ const InputMaxChars = ({ id, label, max, placeholder, initialValue = '', onChang
     setValue(initialValue);
     setNumChars(initialValue.length);
   }, [initialValue]);
+
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      if (value.length === 0) {
+        setError('This field is required');
+        return false;
+      } else if (value.length > max) {
+        setError(`Maximum ${max} characters allowed`);
+        return false;
+      } else {
+        setError('');
+        return true;
+      }
+    }
+  }));
 
   return (
     <div>
@@ -32,10 +51,10 @@ const InputMaxChars = ({ id, label, max, placeholder, initialValue = '', onChang
         onChange={handleChange}
       />
       <div className="text-right text-gray-500 text-sm mt-1">
-        {numChars}/{max}
+        {error && <p className="text-red-500">{error}</p>} {numChars}/{max}
       </div>
     </div>
   );
-};
+});
 
 export default InputMaxChars;

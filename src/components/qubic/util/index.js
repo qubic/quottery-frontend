@@ -12,3 +12,10 @@ export const truncateMiddle = (str, charsToRemove) => {
 }
 
 export const sumArray = (arr) => arr.reduce((acc, curr) => acc + curr, 0)
+
+// Convert Uint8Array to hex string
+export const byteArrayToHexString = (byteArray) => {
+  const hexString = Array.from(byteArray, byte => byte.toString(16).padStart(2, '0')).join('')
+  console.log('byteArrayToHexString:', hexString)
+  return hexString
+}

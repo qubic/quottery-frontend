@@ -13,7 +13,7 @@ import { sumArray } from '../components/qubic/util'
 
 function BetDetailsPage() {
   const { id } = useParams()
-  const { state } = useQuotteryContext()
+  const { state, fetchBets } = useQuotteryContext()
   const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
   const bet = state.bets.find(bet => bet.bet_id === parseInt(id))
   const [selectedOption, setSelectedOption] = useState(null)
@@ -259,7 +259,10 @@ function BetDetailsPage() {
 
           <ConfirmTxModal
             open={showConfirmTxModal}
-            onClose={() => setShowConfirmTxModal(false)}
+            onClose={() => {
+              fetchBets('active')
+              setShowConfirmTxModal(false)
+            }}
             tx={{
               title: 'Bet Now',
               description: 'Are you sure you want to bet now?'

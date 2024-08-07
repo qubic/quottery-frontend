@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 
-const SelectDateTime = ({ label, fieldId, onChange }) => {
+const SelectDateTime = forwardRef(({ label, fieldId, onChange }, ref) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedHours, setSelectedHours] = useState('');
   const [selectedMinutes, setSelectedMinutes] = useState('');
+  const [error, setError] = useState('');
 
   const handleDateChange = (event) => {
     const date = event.target.value;
@@ -27,6 +28,26 @@ const SelectDateTime = ({ label, fieldId, onChange }) => {
     const time = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
     onChange({ date, time });
   };
+
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      if (!selectedDate) {
+        setError('Date is required');
+        return false;
+      }
+      if (!selectedHours) {
+        setError('Hours are required');
+        return false;
+      }
+      if (!selectedMinutes) {
+        setError('Minutes are required');
+        return false;
+      }
+      setError('');
+      return true;
+    }
+  }));
+
 
   return (
     <div>
@@ -97,8 +118,9 @@ const SelectDateTime = ({ label, fieldId, onChange }) => {
           </select>
         </div>
       </div>
+      {error && <p className="text-red-500 text-right text-sm">{error}</p>}
     </div>
   );
-};
+});
 
 export default SelectDateTime;

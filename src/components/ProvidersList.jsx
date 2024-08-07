@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import InputMaxChars from './qubic/ui/InputMaxChars';
-import InputNumbersOnly from './qubic/ui/InputNumbersOnly';
+import InputRegEx from './qubic/ui/InputRegEx';
 
 const ProvidersList = ({ max, providers: initialProviders, onChange }) => {
   const [providers, setProviders] = useState(initialProviders);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setProviders(initialProviders);
@@ -19,7 +20,7 @@ const ProvidersList = ({ max, providers: initialProviders, onChange }) => {
   const handleAddProvider = (event) => {
     event.preventDefault();
     if (providers.length < max) {
-      const newProviders = [...providers, { name: '', fee: '' }];
+      const newProviders = [...providers, { publicId: '', fee: '' }];
       setProviders(newProviders);
       onChange(newProviders);
     }
@@ -31,27 +32,46 @@ const ProvidersList = ({ max, providers: initialProviders, onChange }) => {
     onChange(newProviders);
   };
 
+  useEffect(() => {
+    const validateProviders = () => {
+      const newErrors = {};
+      providers.forEach((provider, index) => {
+        if (!provider.name) {
+          newErrors[`publicId_${index}`] = 'Oracle ID is required';
+        }
+        if (!provider.fee) {
+          newErrors[`fee_${index}`] = 'Fee is required';
+        }
+      });
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+    validateProviders();
+  }, [providers]);
+
   return (
     <div className="space-y-4">
       {providers.map((provider, index) => (
         <div key={index} className="flex items-stretch space-x-2">
           <div className="flex-grow">
             <InputMaxChars
-              id={`provider-name-${index}`}
-              label={`Oracle ${index + 1} ID`}
-              max={50}
+              id={`provider-publicId-${index}`}
+              label={`Oracle ${index + 1} - ID`}
+              max={60}
               placeholder="Enter Oracle ID"
-              initialValue={provider.name}
-              onChange={(value) => handleProviderChange(index, 'name', value)}
+              initialValue={provider.publicId}
+              onChange={(value) => handleProviderChange(index, 'publicId', value)}
             />
+            {errors[`publicId_${index}`] && <p className="text-red-500">{errors[`publicId_${index}`]}</p>}
           </div>
           <div className="w-32">
-            <InputNumbersOnly
+            <InputRegEx
               id={`provider-fee-${index}`}
-              label={`Oracle ${index + 1} Fee`}
+              label={`Fee %`}
               initialValue={provider.fee}
               onChange={(value) => handleProviderChange(index, 'fee', value)}
             />
+            {errors[`fee_${index}`] && <p className="text-red-500">{errors[`fee_${index}`]}</p>}
           </div>
           <button
             onClick={(e) => {

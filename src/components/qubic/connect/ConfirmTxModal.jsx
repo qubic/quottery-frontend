@@ -2,12 +2,9 @@
 import { useEffect, useState } from "react"
 import Card from "../Card"
 import { useQubicConnect } from "./QubicConnectContext"
-import { useQuotteryContext } from "../../../contexts/QuotteryContext"
 
 const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
     const { getTick } = useQubicConnect()
-    const { fetchBets } = useQuotteryContext()
-
     const [confirmedTx, setConfirmedTx] = useState(null)
     const [initialTick, setInitialTick] = useState(null)
     const [tick, setTick] = useState(null)
@@ -18,7 +15,6 @@ const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
         let intervalId;
 
         const fetchTick = async () => {
-          console.log("fetching tick");
           const t = await getTick();
           setTick(t);
         };
@@ -36,18 +32,9 @@ const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
             const targetTick = confirmedTx.targetTick;
             const normalizedTick = ((tick - initialTick) / (targetTick - initialTick)) * 100;
             const widthPercentage = Math.min(Math.max(normalizedTick, 0), 100);
-
-            //   console.log(`Initial tick: ${initialTick}`);
-            //   console.log(`Current tick: ${tick}`);
-            //   console.log(`Target tick: ${targetTick}`);
-            //   console.log(`Width percentage: ${widthPercentage}%`);
-
-            if (widthPercentage >= 100) {
-                fetchBets()
-                onClose()
-            }
+            if (widthPercentage >= 100) onClose()
         }
-    }, [tick, confirmedTx, initialTick, fetchBets, onClose])
+    }, [tick, confirmedTx, initialTick, onClose])
 
     const startTickFetchInterval = async (cTx) => {
         cTx.targetTick = cTx.targetTick + 2 // Add 2 to target tick to make sure backend fetches data
@@ -90,7 +77,7 @@ const ConfirmTxModal = ({ tx, open, onClose, onConfirm }) => {
                     }
 
                     {!confirmedTx && <>
-                        <p className="text-white">{tx.description}</p>
+                        {tx.description}
                         {/* <ConfirmSlider onConfirm={onConfirm} /> */}
                         <button
                             className="bg-primary-40 p-4 rounded-lg"

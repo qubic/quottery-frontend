@@ -1,47 +1,87 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SelectDateTime from '../components/qubic/ui/SelectDateTime'
 import InputMaxChars from '../components/qubic/ui/InputMaxChars'
 import FormHead from '../components/qubic/ui/FormHead'
 import OptionsList from '../components/OptionsList'
 import ProvidersList from '../components/ProvidersList'
-import LabelWithPopover from '../components/qubic/ui/LabelWithPopover'
+import InputNumbers from '../components/qubic/ui/InputNumbers'
+import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
+import { useQubicConnect } from '../components/qubic/connect/QubicConnectContext'
+import BetCreateConfirm from '../components/BetCreateConfirm'
+import { useQuotteryContext } from "../contexts/QuotteryContext"
 
 function BetCreatePage() {
 
   const navigate = useNavigate()
+  const [showConfirmTxModal, setShowConfirmTxModal] = useState(false)
+  const { connected, toggleConnectModal } = useQubicConnect()
+  const { fetchBets, signIssueBetTx, createTestBet } = useQuotteryContext()
 
   const [bet, setBet] = useState({
     description: '',
     closeDateTime: '',
     endDateTime: '',
     options: ['', ''],
-    providers: [{ name: '', fee: '' }],
-    fee: ''
+    providers: [{
+      publicId: '',
+      fee: ''
+    }],
+    amountPerSlot: '',
+    maxBetSlots: '',
   })
-  const [options, setOptions] = useState(bet.options);
+  const [errors] = useState({})
 
-  const handleOptionsChange = (newOptions) => {
-    setOptions(newOptions);
-  };
+  const descriptionRef = useRef()
+  const closeDateTimeRef = useRef()
+  const endDateTimeRef = useRef()
+  const amountPerSlotRef = useRef();
+  const maxBetSlotsRef = useRef();
 
-  const handleCloseDateTimeChange = (dateTime) => {
-    console.log('Close Date and Time:', dateTime)
-    // update close date and time of bet state
-    setBet({ ...bet, closeDateTime: dateTime })
+  const validateForm = () => {
+    const isDescriptionValid = descriptionRef.current.validate()
+    const isCloseDateTimeValid = closeDateTimeRef.current.validate()
+    const isEndDateTimeValid = endDateTimeRef.current.validate()
+    const isOptionsValid = bet.options.length >= 2
+    const isProvidersValid = bet.providers.length >= 1 && bet.providers.every(provider => provider.publicId && provider.fee)
+    const isAmountPerSlotValid = amountPerSlotRef.current.validate()
+    const isMaxBetSlotsValid = maxBetSlotsRef.current.validate()
+
+    return (
+      isDescriptionValid &&
+      isCloseDateTimeValid &&
+      isEndDateTimeValid &&
+      isOptionsValid &&
+      isProvidersValid &&
+      isAmountPerSlotValid &&
+      isMaxBetSlotsValid
+    )
   }
 
-  const handleEndDateTimeChange = (dateTime) => {
-    console.log('End Date and Time:', dateTime)
-    // update end date and time of bet state
-    setBet({ ...bet, endDateTime: dateTime })
+  const handleOptionsChange = newOptions => setBet({...bet, options: newOptions})
+  const handleCloseDateTimeChange = dateTime => setBet({ ...bet, closeDateTime: dateTime })
+  const handleEndDateTimeChange = dateTime => setBet({ ...bet, endDateTime: dateTime })
+  const handleProvidersChange = newProviders => setBet({...bet, providers: newProviders})
+  const handleAmountPerSlotChange = value => setBet({ ...bet, amountPerSlot: value })
+  const handleMaxBetSlotsChange = value => setBet({ ...bet, maxBetSlots: value })
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    if(connected) {
+      if (validateForm()) {
+        // calculate diffHours of closeDateTime and endDateTime
+        const closeDateTime = new Date(bet.closeDateTime.date + ' ' + bet.closeDateTime.time)
+        const endDateTime = new Date(bet.endDateTime.date + ' ' + bet.endDateTime.time)
+        const diffHours = (endDateTime - closeDateTime) / 1000 / 60 / 60
+        bet.diffHours = diffHours
+        console.log('Valid Bet:', bet)
+        setShowConfirmTxModal(true)
+      } else {
+        console.log('Form has errors:', errors)
+      }
+    }else{
+      toggleConnectModal()
+    }
   }
-
-  const [providers, setProviders] = useState([{ name: '', fee: '' }]);
-
-  const handleProvidersChange = (newProviders) => {
-    setProviders(newProviders);
-  };
 
   return (
     <div className='mt-[90px] sm:px-30 md:px-130'>
@@ -52,28 +92,29 @@ function BetCreatePage() {
           onBack={() => navigate('/')}
         />
 
-        <form className="space-y-10">
+        <form className="space-y-10" onSubmit={handleSubmit}>
           {/* Bet description */}
           <InputMaxChars
             id="description"
+            ref={descriptionRef}
             label="Bet description"
             max={100}
             placeholder="Enter bet description"
             onChange={(value) => {
-              // update bet description of bet state
               setBet({ ...bet, description: value })
-              console.log('Bet description:', value)
             }}
           />
 
           {/* Expiration dates */}
           <SelectDateTime
+            ref={closeDateTimeRef}
             label="Close Date and Time"
             fieldId="close"
             onChange={handleCloseDateTimeChange}
           />
 
           <SelectDateTime
+            ref={endDateTimeRef}
             label="End Date and Time"
             fieldId="end"
             onChange={handleEndDateTimeChange}
@@ -88,9 +129,10 @@ function BetCreatePage() {
 
             <OptionsList
               max={20}
-              options={options}
+              options={bet.options}
               onChange={handleOptionsChange}
             />
+            {errors.options && <p className="text-red-500">{errors.options}</p>}
           </div>
 
           {/* Oracle Providers */}
@@ -102,43 +144,43 @@ function BetCreatePage() {
 
             <ProvidersList
               max={8}
-              providers={providers}
+              providers={bet.providers}
               onChange={handleProvidersChange}
             />
           </div>
 
           {/* Settings */}
-          <div>
-            <LabelWithPopover
-              label="Number of Qus per Slot"
-              description="Here we go with a small help description."
-            />
-            <input
-              id="fee"
-              type="number"
-              className="w-full p-4 bg-gray-80 border border-gray-70 text-white rounded-lg placeholder-gray-500"
-              placeholder="Enter fee and rate"
-            />
-          </div>
+          <InputNumbers
+            id="amountPerSlot"
+            label="Amount of Qus per Slot"
+            placeholder="Enter amount of Qus per slot"
+            description="Here we go with a small help description."
+            ref={amountPerSlotRef}
+            onChange={handleAmountPerSlotChange}
+          />
 
-          <div>
-            <LabelWithPopover
-              label="Maximum Number of Bet Slots per Option"
-              description="Here we go with a small help description."
-            />
-            <input
-              id="fee"
-              type="number"
-              className="w-full p-4 bg-gray-80 border border-gray-70 text-white rounded-lg placeholder-gray-500"
-              placeholder="Enter fee and rate"
-            />
-          </div>
+          <InputNumbers
+            id="maxBetSlots"
+            label="Maximum Number of Bet Slots per Option"
+            placeholder="Enter max bet slots"
+            description="Here we go with a small help description."
+            ref={maxBetSlotsRef}
+            onChange={handleMaxBetSlotsChange}
+          />
+
+          <button className='bg-primary-40 p-4 rounded-lg'
+            onClick={(e) => {
+              e.preventDefault()
+              createTestBet()
+          }}>
+              Test Bet
+          </button>
 
           {/* Create Bet button */}
           <div>
             <button
-              type="submit"
               className="w-full p-4 bg-primary-40 text-black rounded-lg"
+              onClick={handleSubmit}
             >
               Create Bet
             </button>
@@ -146,6 +188,22 @@ function BetCreatePage() {
         </form>
       </div>
 
+      <ConfirmTxModal
+        open={showConfirmTxModal}
+        onClose={() => {
+          fetchBets('active')
+          setShowConfirmTxModal(false)
+          navigate('/')
+        }}
+        tx={{
+          title: 'Create Bet',
+          description: <BetCreateConfirm bet={bet} />,
+        }}
+        onConfirm={async () => {
+          const confirmed = await signIssueBetTx(bet)
+          return confirmed
+        }}
+      />
     </div>
   )
 }
