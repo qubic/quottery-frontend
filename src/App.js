@@ -11,22 +11,26 @@ import Footer from './components/layout/Footer'
 
 function App() {
   return (
-    <QuotteryProvider>
-      <QubicConnectProvider>
-        <BrowserRouter>
-          <Header />
-          <Routes>
-            <Route>
-              <Route path="/" element={<StartPage />} />
-            </Route>
-            <Route>
-              <Route path="/bet/:id" element={<BetDetailsPage />} />
-            </Route>
-          </Routes>
-          <Footer />
-        </BrowserRouter>
-      </QubicConnectProvider>
-    </QuotteryProvider>
+    <div className="flex flex-col min-h-screen">
+      <QuotteryProvider>
+        <QubicConnectProvider>
+          <BrowserRouter>
+            <Header />
+            <div className='flex-grow'>
+              <Routes>
+                <Route>
+                  <Route path="/" element={<StartPage />} />
+                </Route>
+                <Route>
+                  <Route path="/bet/:id" element={<BetDetailsPage />} />
+                </Route>
+              </Routes>
+            </div>          
+            <Footer />
+          </BrowserRouter>
+        </QubicConnectProvider>
+      </QuotteryProvider>
+    </div>
   )
 }
 
