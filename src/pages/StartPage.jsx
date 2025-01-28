@@ -1,13 +1,37 @@
-import React, {useEffect} from 'react'
-import {useNavigate} from 'react-router-dom'
-import BetOverviewCard from '../components/BetOverviewCard'
-import Dropdown from '../components/qubic/Dropdown'
-import {useQuotteryContext} from '../contexts/QuotteryContext'
-import LoadingSpinner from '../components/LoadingSpinner'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Typography,
+  Button,
+  Container,
+  Box,
+  useTheme,
+  Grid,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
+import GamepadIcon from "@mui/icons-material/Gamepad";
+import { useQuotteryContext } from "../contexts/QuotteryContext";
+import { Typewriter } from "react-simple-typewriter";
+import { motion, AnimatePresence } from "framer-motion";
+import ModernSearchFilter from "../components/SearchFilter";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import AnimatedBars from "../components/qubic/ui/AnimateBars";
+import { useMediaQuery } from "@mui/material";
+import BetOverviewCard from "../components/BetOverviewCard";
+import BetOverviewTable from "../components/BetOverviewTable";
 
 function StartPage() {
-  const navigate = useNavigate()
-  const {state,
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+  const [viewMode, setViewMode] = useState("table");
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+
+  const {
+    state,
     loading,
     setBetsFilter,
     fetchBets,
@@ -17,319 +41,383 @@ function StartPage() {
     setCurrentFilterOption,
     currentPage,
     setCurrentPage,
-    inputPage,
-    setInputPage,} = useQuotteryContext()
+  } = useQuotteryContext();
 
   const filterOptions = [
-    {label: 'All', value: 'all'},
-    {label: 'Active', value: 'active'},
-    {label: 'Locked', value: 'locked'},
-    {label: 'Inactive', value: 'inactive'},
-  ]
+    { label: "All", value: "all" },
+    { label: "Active", value: "active" },
+    { label: "Locked", value: "locked" },
+    { label: "Inactive", value: "inactive" },
+  ];
 
-  const renderBets = () => {
-    if (loading) {
-      return <LoadingSpinner
-        fullPage={true}/>
-    }
+  const handleBetClick = (betId) => {
+    navigate(`/bet/${betId}`);
+  };
 
-    switch (filterOptions[currentFilterOption].value) {
-      case 'inactive':
-        return (
-          <>
-            <h2 className="text-3xl font-semibold text-primary-40 text-center mt-12 mb-12">Bets Waiting for Results</h2>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.waitingForResultsBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  // status={'waiting'}
-                />
-              ))}
-            </div>
+  const filteredBets = (bets) =>
+    bets.filter((bet) =>
+      (bet.full_description || bet.bet_desc || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
 
-            <h2 className="text-3xl font-semibold justify-between items-center mt-[48px] px-20 text-primary-40 text-center mt-12 mb-12">
-              Historical Bets
-            </h2>
-            {renderHistoricalBets()}
-          </>
-        )
-      case 'all':
-        return (
-          <>
-            <h2 className="text-3xl font-semibold text-primary-40 text-center mt-12 mb-12">Active Bets</h2>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.activeBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  // status={'active'}
-                />
-              ))}
-            </div>
+  const annotateBetsWithStatus = () => {
+    const activeBets = state.activeBets.map((bet) => ({
+      ...bet,
+      status: "active",
+    }));
+    const lockedBets = state.lockedBets.map((bet) => ({
+      ...bet,
+      status: "locked",
+    }));
+    const waitingBets = state.waitingForResultsBets.map((bet) => ({
+      ...bet,
+      status: "waiting",
+    }));
+    const historicalBets = state.historicalBets.map((bet) => ({
+      ...bet,
+      status: "historical",
+    }));
 
-            <h2 className="text-3xl font-semibold text-primary-40 text-center mt-12 mb-12">Locked Bets</h2>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.lockedBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  status={'locked'}
-                />
-              ))}
-            </div>
-
-            <h2 className="text-3xl font-semibold text-primary-40 text-center mt-12 mb-12">Bets Waiting for Results</h2>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.waitingForResultsBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  // status={'waiting'}
-                />
-              ))}
-            </div>
-
-            <h2 className="text-3xl font-semibold text-primary-40 text-center mt-12 mb-12">Historical Bets</h2>
-            {renderHistoricalBets()}
-          </>
-        )
-      case 'active':
-        return (
-          <>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mt-12">
-              {state.activeBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  // status={'active'}
-                />
-              ))}
-            </div>
-          </>
-        )
-      case 'locked':
-        return (
-          <>
-            <div
-              className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              {state.lockedBets.map((bet) => (
-                <BetOverviewCard
-                  key={bet.bet_id}
-                  data={bet}
-                  onClick={() => navigate('/bet/' + bet.bet_id)}
-                  status={'locked'}
-                />
-              ))}
-            </div>
-          </>
-        )
+    let combined = [];
+    const filterValue = filterOptions[currentFilterOption].value;
+    switch (filterValue) {
+      case "all":
+        combined = [
+          ...activeBets,
+          ...lockedBets,
+          ...waitingBets,
+          ...historicalBets,
+        ];
+        break;
+      case "active":
+        combined = [...activeBets];
+        break;
+      case "locked":
+        combined = [...lockedBets];
+        break;
+      case "inactive":
+        combined = [...waitingBets, ...historicalBets];
+        break;
       default:
-        return null
+        combined = [];
     }
-  }
+    return filteredBets(combined);
+  };
 
   useEffect(() => {
-    fetchBets(filterOptions[currentFilterOption].value, currentPage)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentFilterOption])
+    const fetchData = async () => {
+      setIsFilterLoading(true);
+      try {
+        await fetchBets(filterOptions[currentFilterOption].value, currentPage);
 
-  useEffect(() => {
-    if (filterOptions[currentFilterOption].value === 'inactive' || filterOptions[currentFilterOption].value === 'all') {
-      let coreNodeBets = [...state.activeBets, ...state.lockedBets, ...state.waitingForResultsBets]
-      fetchHistoricalBets(coreNodeBets, filterOptions[currentFilterOption].value, currentPage)
-    }
-  }, [currentPage, state.activeBets, state.lockedBets, state.waitingForResultsBets, currentFilterOption])
-
-  const renderHistoricalBets = () => {
-    return (
-      <div className="relative">
-        {historicalLoading && <LoadingSpinner/>}
-        <div>
-          <div
-            className="grid justify-between items-center mt-[48px] px-20 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {state.historicalBets.map((bet) => (
-              <BetOverviewCard
-                key={bet.bet_id}
-                data={bet}
-                onClick={() => navigate('/bet/' + bet.bet_id)}
-                status={bet.result !== -1 ? 'published' : ''}
-              />
-            ))}
-          </div>
-          {renderPaginationControls()}
-        </div>
-      </div>
-    )
-  }
-
-  const renderPaginationControls = () => {
-    const {currentPage, totalPages} = state.historicalPagination
-
-    // Determine the range of page numbers to display
-    const pageNumbers = []
-    let startPage = Math.max(currentPage - 5, 1)
-    let endPage = Math.min(currentPage + 5, totalPages)
-
-    // Adjust the range if there are not enough pages at the beginning or end
-    if (currentPage <= 6) {
-      endPage = Math.min(11, totalPages)
-    } else if (currentPage + 5 >= totalPages) {
-      startPage = Math.max(totalPages - 10, 1)
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i)
-    }
-
-    const handleGoToPage = () => {
-      const pageNumber = parseInt(inputPage)
-      if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
-        setCurrentPage(pageNumber)
-        setInputPage('')
-      } else {
-        alert(`Please enter a valid page number between 1 and ${totalPages}`)
+        if (
+          ["inactive", "all"].includes(filterOptions[currentFilterOption].value)
+        ) {
+          const coreNodeBets = [
+            ...state.activeBets,
+            ...state.lockedBets,
+            ...state.waitingForResultsBets,
+          ];
+          await fetchHistoricalBets(
+            coreNodeBets,
+            filterOptions[currentFilterOption].value,
+            currentPage
+          );
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setIsFilterLoading(false);
       }
-    }
+    };
 
-    return (
-      <div className={"mt-4"}>
-        <div className="flex justify-center items-center mt-4">
-          {/* First Button */}
-          <button
-            className="px-2 py-1 mx-1 bg-gray-700 text-white rounded disabled:opacity-50"
-            onClick={() => setCurrentPage(1)}
-            disabled={currentPage === 1}
-          >
-            First
-          </button>
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFilterOption, currentPage]);
 
-          {/* Previous Button */}
-          <button
-            className="px-2 py-1 mx-1 bg-gray-700 text-white rounded disabled:opacity-50"
-            onClick={() => {
-              if (currentPage > 1) {
-                setCurrentPage(currentPage - 1)
-              }
-            }}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
+  const renderLoading = () => (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        mt: { xs: 4, sm: 6, md: 8 },
+        mb: { xs: 4, sm: 6, md: 8 },
+        gap: 2,
+      }}
+    >
+      <AnimatedBars />
+      <Typography
+        variant="h6"
+        color="text.secondary"
+        textAlign="center"
+        marginTop={2}
+        sx={{ fontSize: { xs: "1rem", sm: "1.2rem", md: "1.5rem" } }}
+      >
+        Loading bets, please wait...
+      </Typography>
+    </Box>
+  );
 
-          {/* Page Numbers */}
-          {pageNumbers.map((pageNumber) => (
-            <button
-              key={pageNumber}
-              className={`px-2 py-1 mx-1 rounded ${
-                pageNumber === currentPage
-                  ? 'bg-primary-40 text-white'
-                  : 'bg-gray-700 text-white hover:bg-primary-20 hover:text-black'
-              }`}
-              onClick={() => {
-                if (pageNumber !== currentPage) {
-                  setCurrentPage(pageNumber)
-                }
-              }}
-            >
-              {pageNumber}
-            </button>
-          ))}
+  const isLoadingOverall = loading || historicalLoading || isFilterLoading;
 
-          {/* Next Button */}
-          <button
-            className="px-2 py-1 mx-1 bg-gray-700 text-white rounded disabled:opacity-50"
-            onClick={() => {
-              if (currentPage < totalPages) {
-                setCurrentPage(currentPage + 1)
-              }
-            }}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
+  const betsToDisplay = annotateBetsWithStatus();
 
-          {/* Last Button */}
-          <button
-            className="px-2 py-1 mx-1 bg-gray-700 text-white rounded disabled:opacity-50"
-            onClick={() => setCurrentPage(totalPages)}
-            disabled={currentPage === totalPages}
-          >
-            Last
-          </button>
-        </div>
-        {/* Go to Page Input */}
-        <div className="flex justify-center items-center mt-4">
-          <input
-            type="number"
-            min="1"
-            max={totalPages}
-            value={inputPage}
-            onChange={(e) => setInputPage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleGoToPage()
-              }
-            }}
-            className="w-16 px-2 py-1 border border-gray-300 rounded mr-2 text-black"
-          />
-          <button
-            onClick={handleGoToPage}
-            className="px-4 py-1 bg-gray-700 text-white rounded"
-          >
-            Go
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const cardVariants = {
+    initial: {
+      scale: 0.7,
+      opacity: 0,
+    },
+    animate: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 12,
+        mass: 0.7,
+      },
+    },
+    exit: {
+      scale: 0.7,
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut",
+      },
+    },
+  };
 
   return (
-    <div className='sm:px-30 md:px-130'>
-      <div className='mt-40 text-center'>
-        <span className='text-40 md:text-48 font-space text-white'>
-          Bet on anything.<span className=' text-primary-40'> Anytime.</span>
-        </span>
-      </div>
-      <div className='text-gray-50 mt-[24px] text-center font-space'>
-        <span className='text-[18px]'>Join the ultimate P2P betting revolution. Safe, Secure and Exciting.</span>
-      </div>
-      <div className=' flex justify-center items-center mt-[32px] '>
-        <button
-          className='bg-[rgba(26,222,245,0.1)] py-[8px] px-[16px] text-[14px] text-primary-40 font-space rounded-[8px]'
-          onClick={() => navigate('/create')}
-        >
-          Create Bet
-        </button>
-      </div>
-      <div className='flex justify-between items-center mt-[48px] px-20'>
-        <span className='text-white font-space'>
-          {filterOptions[currentFilterOption].label} Bets
-        </span>
-        <Dropdown
-          label={'Filter Bets'}
-          options={filterOptions}
-          selected={currentFilterOption}
-          setSelected={(idx) => {
-            setCurrentFilterOption(idx)
-            setCurrentPage(1) // Reset to page 1 when filter changes
-            setBetsFilter(filterOptions[idx].value)
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: theme.palette.background.default,
+        pt: { xs: 10, sm: 12, md: 16 },
+        pb: { xs: 6, sm: 8, md: 10 },
+        overflow: "hidden",
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Header Section */}
+        <Box
+          component="header"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: { xs: 4, sm: 5, md: 6 },
+            mt: { xs: -2, sm: -3, md: -5 },
+            textAlign: "center",
           }}
-        />
-      </div>
-      {renderBets()}
-    </div>
-  )
+        >
+          <Typography
+            variant="h2"
+            fontWeight="bold"
+            gutterBottom
+            component={motion.h2}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            color="text.primary"
+            sx={{
+              fontSize: {
+                xs: "2.7rem",
+                sm: "3rem",
+                md: "3.5rem",
+                lg: "3.5rem",
+              },
+              lineHeight: 1.2,
+              mt: 3,
+            }}
+          >
+            Bet Anything.{" "}
+            <Box
+              component="span"
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.background.default,
+                px: { xs: 0.5, sm: 1 },
+                fontSize: "inherit",
+              }}
+              fontWeight="bold"
+            >
+              Anytime.
+            </Box>
+          </Typography>
+          <Typography
+            color="text.secondary"
+            gutterBottom
+            fontWeight="bold"
+            component={motion.div}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            sx={{
+              fontSize: {
+                xs: "0.9rem",
+                sm: "1.1rem",
+                md: "1.2rem",
+                lg: "1.3rem",
+              },
+              mx: "auto",
+              fontWeight: "500",
+            }}
+          >
+            <Typewriter
+              words={[
+                "Join the ultimate P2P betting revolution. Safe, Secure, and Exciting",
+              ]}
+              loop={1}
+              cursor
+              cursorStyle="_"
+              typeSpeed={33}
+              deleteSpeed={50}
+              delaySpeed={1000}
+            />
+          </Typography>
+          <Button
+            onClick={() => navigate("/create")}
+            startIcon={<GamepadIcon />}
+            variant="contained"
+            color={
+              theme.palette.mode === "dark"
+                ? "secondary"
+                : theme.palette.background.paper
+            }
+            component={motion.button}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 10,
+              boxShadow: theme.shadows[1],
+              color: theme.palette.primary.contrastText,
+              "&:focus": {
+                backgroundColor: theme.palette.primary.main,
+              },
+              mt: { xs: 2, sm: 3 },
+              mb: { xs: 2, sm: 0 },
+              py: { xs: 0.5, sm: 1 },
+              px: { xs: 1.5, sm: 2 },
+              fontSize: { xs: "1rem", sm: "1rem" },
+              "&:hover": {
+                "& .MuiSvgIcon-root": {
+                  transform: "rotate(720deg)",
+                },
+                backgroundColor: theme.palette.primary.main,
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.contrastText
+                    : "white",
+              },
+              "& .MuiSvgIcon-root": {
+                transition: "transform 0.5s",
+              },
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              fontWeight: "bold",
+            }}
+          >
+            Create Bet
+          </Button>
+        </Box>
+
+        {/* Filter and Search Section */}
+        <Box sx={{ position: "relative", mb: { xs: 3, sm: 3 } }}>
+          <ModernSearchFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filterOptions={filterOptions}
+            currentFilterOption={currentFilterOption}
+            onFilterChange={(idx) => {
+              setCurrentFilterOption(idx);
+              setCurrentPage(1);
+              setBetsFilter(filterOptions[idx].value);
+              setSearchTerm("");
+            }}
+          />
+        </Box>
+
+        {/* Toggle View Mode Buttons - Desktop Only */}
+        {isDesktop && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mb: 3,
+            }}
+          >
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(e, newVal) => {
+                if (newVal !== null) setViewMode(newVal);
+              }}
+              aria-label="view mode"
+              size="small"
+            >
+              <ToggleButton value="cards" aria-label="cards view">
+                <ViewModuleIcon />
+              </ToggleButton>
+              <ToggleButton value="table" aria-label="table view">
+                <TableChartIcon />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        )}
+
+        {/* Display either Cards or Table */}
+        {isLoadingOverall ? (
+          renderLoading()
+        ) : (
+          <Box sx={{ mb: { xs: 4, sm: 5, md: 6 } }}>
+            {viewMode === "table" && isDesktop ? (
+              <BetOverviewTable
+                bets={betsToDisplay}
+                onRowClick={(betId) => handleBetClick(betId)}
+              />
+            ) : (
+              <Grid
+                container
+                spacing={{ xs: 2, sm: 3, md: 4 }}
+                justifyContent="center"
+              >
+                <AnimatePresence>
+                  {betsToDisplay.map((bet, index) => (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      key={bet.bet_id}
+                      component={motion.div}
+                      variants={cardVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={{ delay: index * 0.02 }}
+                    >
+                      <BetOverviewCard
+                        data={bet}
+                        onClick={() => handleBetClick(bet.bet_id)}
+                        status={bet.status}
+                      />
+                    </Grid>
+                  ))}
+                </AnimatePresence>
+              </Grid>
+            )}
+          </Box>
+        )}
+      </Container>
+    </Box>
+  );
 }
 
-export default StartPage
+export default StartPage;

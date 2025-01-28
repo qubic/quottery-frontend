@@ -1,63 +1,113 @@
-import lock from "../../../assets/lock.svg"
-import unlocked from "../../../assets/unlocked.svg"
-import ConnectModal from "./ConnectModal"
-import {useQubicConnect} from "./QubicConnectContext"
-import {useQuotteryContext} from '../../../contexts/QuotteryContext'
-import {formatQubicAmount} from "../util"
-import {MIN_BALANCE_THRESHOLD} from "../util/commons"
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  useMediaQuery,
+  IconButton,
+} from "@mui/material";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import ConnectModal from "./ConnectModal";
+import { useQubicConnect } from "./QubicConnectContext";
+import { useQuotteryContext } from "../../../contexts/QuotteryContext";
+import { MIN_BALANCE_THRESHOLD } from "../util/commons";
+import { motion } from "framer-motion";
+import { useTheme } from "@mui/material/styles";
 
 const ConnectLink = () => {
-  const {connected, showConnectModal, toggleConnectModal} = useQubicConnect()
-  const {balance, fetchBalance, walletPublicIdentity} = useQuotteryContext()
+  const { connected, showConnectModal, toggleConnectModal } = useQubicConnect();
+  const { balance, fetchBalance, walletPublicIdentity } = useQuotteryContext();
+  const theme = useTheme();
+  const lg = useMediaQuery(theme.breakpoints.up("lg"));
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleBalanceClick = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (walletPublicIdentity) {
-      fetchBalance(walletPublicIdentity)
+      fetchBalance(walletPublicIdentity);
     }
-  }
+  };
 
-  const isNotEnoughFund = parseInt(balance) <= MIN_BALANCE_THRESHOLD
+  const isNotEnoughFund = parseInt(balance) <= MIN_BALANCE_THRESHOLD;
 
-  return (<>
-    <div className="absolute right-12 sm:right-12 flex gap-[10px] justify-center items-center cursor-pointer"
-         onClick={() => toggleConnectModal()}
-    >
-      {connected ? <>
-        <div className="hidden md:block flex flex-col items-center">
-          <span
-            className='hidden md:flex font-space items-center flex-row text-[16px] text-gray-50 mt-[5px] font-[500]'>
-            <img src={lock} alt="locked lock icon" className="mr-2"/>
-            <span>Lock Wallet</span>
-          </span>
-          {balance && (
-            <div className={`hidden md:block text-white mt-2 text-[14px] cursor-pointer ${isNotEnoughFund ? 'text-red font-bold' : 'text-white'}`}
-                 onClick={handleBalanceClick}
-                 title={isNotEnoughFund ? "Please deposit funds into your account" : "Click to refresh balance"}
-            >
-              Balance: {formatQubicAmount(balance)} QUBIC
-            </div>
-          )}
-        </div>
-
-        <div className="md:hidden">
-          <span className='hidden md:block font-space text-[16px] text-gray-50 mt-[5px] font-[500]'>
-          Lock Wallet
-        </span>
-          <img src={lock} alt="locked lock icon" />
-        </div>
-      </> : <>
-        <span className='hidden md:block font-space text-[16px] text-gray-50 mt-[5px] font-[500]'>
-          Unlock Wallet
-        </span>
-        <img src={unlocked} alt="unlocked lock icon"/>
-      </>}
-    </div>
-    <ConnectModal
-      open={showConnectModal}
-      onClose={() => toggleConnectModal()}
+  const icon = connected ? (
+    <AccountBalanceWalletIcon
+      sx={{
+        color: connected
+          ? theme.palette.primary.main
+          : theme.palette.secondary.main,
+      }}
     />
-  </>)
-}
+  ) : (
+    <LockOpenIcon color="tertiary" />
+  );
 
-export default ConnectLink
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        {lg ? (
+          <Button
+            onClick={toggleConnectModal}
+            variant="outlined"
+            color={connected ? "primary" : "tertiary"}
+            startIcon={
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {icon}
+              </Box>
+            }
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                sx={{ letterSpacing: 0.5 }}
+              >
+                {connected ? "WALLET" : "UNLOCK WALLET"}
+              </Typography>
+            </Stack>
+          </Button>
+        ) : (
+          <Box
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <IconButton
+              onClick={toggleConnectModal}
+              sx={{
+                p: 0.5,
+                backgroundColor: "transparent",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                },
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.text.primary,
+              }}
+            >
+              {icon}
+            </IconButton>
+          </Box>
+        )}
+      </motion.div>
+
+      <ConnectModal open={showConnectModal} onClose={toggleConnectModal} />
+    </>
+  );
+};
+
+export default ConnectLink;

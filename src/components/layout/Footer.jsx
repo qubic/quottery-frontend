@@ -1,74 +1,116 @@
-import {useState} from 'react'
-import {useLocation} from 'react-router-dom'
-import pkg from '../../../package.json'
-import logoShort from '../../assets/logo/logo-text-short.svg'
-import ServerConfigModal from "../qubic/connect/ServerConfigModal"
+import { useLocation } from "react-router-dom";
+import pkg from "../../../package.json";
+import logoShort from "../../assets/logo/logo-text-short.svg";
+import { Box, Typography, Link, useTheme, Divider } from "@mui/material";
 
 const Footer = () => {
-  // get the name of the current route
-  const {pathname} = useLocation()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { pathname } = useLocation();
+  const theme = useTheme();
 
-  // if the current route is not '/bet/:id', render the footer
-  if (pathname.indexOf('/bet/') === -1) {
-    return (
-      <div
-        className="px-5 sm:px-20 md:px-100 py-16 flex flex-col sm:flex-row items-center sm:justify-between sm:items-end gap-10">
-        <div className="flex gap-10">
-          <img src={logoShort} alt="logo-short"/>
-          <span className="text-gray-50 text-12 leading-18 font-space">
-              {'\u00A9'} {new Date().getFullYear()} Qubic
-            </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <a
-            style={{textDecoration: 'none', color: 'white'}}
-            className="text-12 leading-18 font-space"
-            target='_blank' rel="noreferrer"
-            href="https://qubic.org/Terms-of-service"
-          >
-            Terms of service
-          </a>
-          <span className="text-gray-50">•</span>
-          <a
-            style={{textDecoration: 'none', color: 'white'}}
-            className="text-12 leading-18 font-space"
-            target='_blank' rel="noreferrer"
-            href="https://github.com/qubic/quottery-frontend/wiki"
-          >
-            Wiki
-          </a>
-          <span className="text-gray-50">•</span>
-          <a
-            style={{textDecoration: 'none', color: 'white'}}
-            className="text-12 leading-18 font-space"
-            target='_blank' rel="noreferrer"
-            href="https://qubic.org/Privacy-policy"
-          >
-            Privacy Policy
-          </a>
-          <span className="text-gray-50">•</span>
-          <a
-            style={{textDecoration: 'none', color: 'white'}}
-            className="text-12 leading-18 font-space"
-            target='_blank' rel="noreferrer"
-            href="https://status.qubic.li/"
-          >
-            Network Status
-          </a>
-          <span
-            className='text-gray-50 text-12 cursor-pointer'
-          >
-            Version {pkg.version}
-          </span>
-        </div>
-        <ServerConfigModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
-      </div>
-    )
+  if (pathname.includes("/bet/")) {
+    return null;
   }
 
-  return null
-}
+  return (
+    <Box
+      px={{ xs: 3, sm: 10, md: 15 }}
+      py={4}
+      display="flex"
+      flexDirection={{ xs: "column", sm: "row" }}
+      alignItems="center"
+      justifyContent="space-between"
+      gap={2}
+      bgcolor={theme.palette.background.paper}
+      color={theme.palette.text.secondary}
+    >
+      <Box display="flex" gap={2} alignItems="center">
+        <img src={logoShort} alt="Logo Qubic" width={60} />
+        <Typography variant="body2">
+          {"\u00A9"} {new Date().getFullYear()} / Qubic
+        </Typography>
+      </Box>
 
-export default Footer
+      <Box
+        display="flex"
+        alignItems="center"
+        gap={1}
+        flexWrap="wrap"
+        justifyContent="center"
+      >
+        <Link
+          href="https://qubic.org/Terms-of-service"
+          target="_blank"
+          rel="noreferrer"
+          underline="hover"
+          color="text.primary"
+          variant="body2"
+          aria-label="Terms of service"
+        >
+          Terms of service
+        </Link>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 1, bgcolor: theme.palette.divider }}
+        />
+
+        <Link
+          href="https://github.com/qubic/quottery-frontend/wiki"
+          target="_blank"
+          rel="noreferrer"
+          underline="hover"
+          color="text.primary"
+          variant="body2"
+          aria-label="Wiki"
+        >
+          Wiki
+        </Link>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 1, bgcolor: theme.palette.divider }}
+        />
+
+        <Link
+          href="https://qubic.org/Privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+          underline="hover"
+          color="text.primary"
+          variant="body2"
+          aria-label="Privacy Policy"
+        >
+          Privacy Policy
+        </Link>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 1, bgcolor: theme.palette.divider }}
+        />
+
+        <Link
+          href="https://status.qubic.li/"
+          target="_blank"
+          rel="noreferrer"
+          underline="hover"
+          color="text.primary"
+          variant="body2"
+          aria-label="Network status"
+        >
+          Network Status
+        </Link>
+      </Box>
+
+      <Typography
+        variant="body2"
+        color="text.primary"
+        sx={{ cursor: "pointer", mt: { xs: 2, sm: 0 } }}
+        aria-label={`Version ${pkg.version}`}
+      >
+        Version {pkg.version}
+      </Typography>
+    </Box>
+  );
+};
+
+export default Footer;
