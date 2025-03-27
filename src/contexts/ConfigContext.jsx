@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 // Default endpoints
 const DEFAULT_HTTP_ENDPOINT = 'https://rpc.qubic.org'
 const DEFAULT_BACKEND_URL = 'https://api.quottery.org'
+export const TICK_OFFSET = 5
 
 const ConfigContext = createContext()
 

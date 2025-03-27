@@ -1,19 +1,13 @@
 /* global BigInt */
 import React, {createContext, useContext, useEffect, useReducer, useState} from 'react'
 import {QubicHelper} from '@qubic-lib/qubic-ts-library/dist/qubicHelper'
-import Crypto from '@qubic-lib/qubic-ts-library/dist/crypto'
-import {useQubicConnect} from '../components/qubic/connect/QubicConnectContext'
-import {
-  fetchActiveBets,
-  fetchBetDetail,
-  fetchNodeInfo,
-  fetchAndVerifyBetDescription
-} from '../components/qubic/util/betApi';
+import {useQubicConnect} from './QubicConnectContext'
+import {fetchActiveBets, fetchAndVerifyBetDescription, fetchBetDetail, fetchNodeInfo} from '../components/api/betApi'
 import {excludedBetIds} from '../components/qubic/util/commons'
-import {useConfig} from "./ConfigContext"
+import {TICK_OFFSET, useConfig} from "./ConfigContext"
+import {buildIssueBetTx, buildJoinBetTx, buildPublishResultTx} from '../components/api/QuotteryApi'
 
 const QuotteryContext = createContext()
-
 
 const betReducer = (state, action) => {
   switch (action.type) {
@@ -51,16 +45,16 @@ export const QuotteryProvider = ({children}) => {
   })
   const [loading, setLoading] = useState(true)
   const [betsFilter, setBetsFilter] = useState('active')
-  const {wallet, broadcastTx, getTick} = useQubicConnect()
+  const {wallet, connected, broadcastTx, getTick, signTransaction, getSourcePublicKey} = useQubicConnect()
   const [balance, setBalance] = useState(null)
   const [walletPublicIdentity, setWalletPublicIdentity] = useState('')
   const qHelper = new QubicHelper()
   const [coreNodeBetIds, setCoreNodeBetIds] = useState([])
   const [historicalLoading, setHistoricalLoading] = useState(false)
-  const [currentFilterOption, setCurrentFilterOption] = useState(1) // 0 = All, 1 = Active, 2 = Locked, 3 = Inactive
+  const [currentFilterOption, setCurrentFilterOption] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
   const [inputPage, setInputPage] = useState('')
-  const { httpEndpoint, backendUrl } = useConfig()
+  const {httpEndpoint, backendUrl} = useConfig()
 
 
   // Fetch bets using the Qubic HTTP API
@@ -71,33 +65,25 @@ export const QuotteryProvider = ({children}) => {
 
         const filteredBetIds = activeBetIds.filter(id => !excludedBetIds.includes(id))
         setCoreNodeBetIds(filteredBetIds)
-
-        return Promise.all(
-          filteredBetIds.map(async (betId) => {
+        return Promise.all(filteredBetIds.map(async (betId) => {
             const bet = await fetchBetDetail(httpEndpoint, backendUrl, betId, filteredBetIds)
             bet.creator = await qHelper.getIdentity(bet.creator); // Update creator field with human-readable identity
-
             bet.oracle_public_keys = bet.oracle_id
             bet.oracle_id = await Promise.all(
               bet.oracle_id.map(async (oracleId) => {
                 return await qHelper.getIdentity(oracleId);
               })
             );
-
             const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z');
-            const now = new Date();
-            bet.is_active = now <= closeDate;
+            bet.is_active = new Date() <= closeDate;
 
             return bet;
           })
         );
       } catch (error) {
-        console.log('Error occurred while fetching bets with Qubic Http.');
-        console.log(error);
-        if (i < maxRetryCount - 1) {
-          console.log('Retrying...');
-        } else {
-          console.log('Unable to fetch bets with Qubic Http API. Falling back to using backend API.');
+        console.log('Error occurred while fetching bets with Qubic Http.', error);
+        if (i === maxRetryCount - 1) {
+          console.log('Falling back to backend API.')
           return null;
         }
       }
@@ -106,10 +92,8 @@ export const QuotteryProvider = ({children}) => {
 
   const fetchHistoricalBets = async (coreNodeBets, filter, page = 1) => {
     setHistoricalLoading(true)
-
     let backendBets = []
     let paginationInfo = {currentPage: 1, totalPages: 1}
-
     try {
       const backendData = await fetchBackendApiBets('inactive', page, 10)
       backendBets = backendData.bets
@@ -117,7 +101,6 @@ export const QuotteryProvider = ({children}) => {
     } catch (error) {
       console.error('Error fetching bets from backend API:', error)
     }
-
     const backendBetsUnique = backendBets.filter(
       (backendBet) => !coreNodeBets.some((coreBet) => areBetsEqual(coreBet, backendBet))
     )
@@ -137,36 +120,30 @@ export const QuotteryProvider = ({children}) => {
 
     const paginationInfo = data.page || {
       current_page: 1,
-      total_pages: 1,
+      total_pages: 1
     }
 
-    var filteredBetList = data.bet_list || []
-    if (data.bet_list) {
-      // const filteredBetList = data.bet_list.filter(bet => !excludedBetIds.includes(bet.bet_id))
+    let filteredBetList = data.bet_list || []
+    for (const bet of filteredBetList) {
+      // parse list fields using JSON.parse
+      bet.oracle_fee = JSON.parse(bet.oracle_fee);
+      bet.oracle_id = JSON.parse(bet.oracle_id);
+      bet.option_desc = JSON.parse(bet.option_desc);
+      bet.betting_odds = JSON.parse(bet.betting_odds);
+      bet.current_bet_state = JSON.parse(bet.current_bet_state);
+      bet.amount_per_bet_slot = BigInt(bet.amount_per_bet_slot);
+      bet.current_num_selection = JSON.parse(bet.current_num_selection);
+      bet.oracle_vote = JSON.parse(bet.oracle_vote);
+      const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z');
+      bet.is_active = new Date() <= closeDate
 
-      for (const bet of filteredBetList) {
-        // parse list fields using JSON.parse
-        bet.oracle_fee = JSON.parse(bet.oracle_fee);
-        bet.oracle_id = JSON.parse(bet.oracle_id);
-        bet.option_desc = JSON.parse(bet.option_desc);
-        bet.betting_odds = JSON.parse(bet.betting_odds);
-        bet.current_bet_state = JSON.parse(bet.current_bet_state);
-        bet.amount_per_bet_slot = BigInt(bet.amount_per_bet_slot)
-        bet.current_num_selection = JSON.parse(bet.current_num_selection);
-        bet.oracle_vote = JSON.parse(bet.oracle_vote);
-        const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z');
-        const now = new Date();
-        bet.is_active = now <= closeDate;
+      // Normalize field names to match new API :-)
+      bet.nOption = bet.no_options
+      bet.maxBetSlotPerOption = bet.max_slot_per_option
+      bet.oracle_public_keys = null
 
-        // Normalize field names to match new API :-)
-        bet.nOption = bet.no_options
-        bet.maxBetSlotPerOption = bet.max_slot_per_option
-        bet.oracle_public_keys = null
-
-        await fetchAndVerifyBetDescription(bet)
-      }
+      await fetchAndVerifyBetDescription(bet)
     }
-
     return {
       bets: filteredBetList,
       pagination: {
@@ -196,8 +173,6 @@ export const QuotteryProvider = ({children}) => {
       bet1.maxBetSlotPerOption === bet2.maxBetSlotPerOption &&
       JSON.stringify(bet1.current_bet_state) === JSON.stringify(bet2.current_bet_state) &&
       JSON.stringify(bet1.current_num_selection) === JSON.stringify(bet2.current_num_selection) &&
-      // JSON.stringify(bet1.betResultWonOption) === JSON.stringify(bet2.betResultWonOption) &&
-      // JSON.stringify(bet1.betResultOPId) === JSON.stringify(bet2.betResultOPId) &&
       Number(bet1.current_total_qus) === Number(bet2.current_total_qus) &&
       JSON.stringify(bet1.betting_odds.map(odd => Number(odd))) === JSON.stringify(bet2.betting_odds.map(odd => Number(odd)))
     );
@@ -208,7 +183,6 @@ export const QuotteryProvider = ({children}) => {
     // First, attempt to fetch bets from the Qubic HTTP API
     let qubicApiBets = []
     let qubicApiAvailable = true
-
     try {
       qubicApiBets = await fetchQubicHttpApiBets()
     } catch (error) {
@@ -220,14 +194,12 @@ export const QuotteryProvider = ({children}) => {
     let activeBets = []
     let lockedBets = []
     let waitingForResultsBets = []
-
     if (qubicApiAvailable && qubicApiBets) {
       // Categorize bets from core node
       const now = new Date()
       for (const bet of qubicApiBets) {
         const closeDate = new Date('20' + bet.close_date + 'T' + bet.close_time + 'Z')
         const endDate = new Date('20' + bet.end_date + 'T' + bet.end_time + 'Z')
-
         if (now < closeDate) {
           activeBets.push(bet)
         } else if (now >= closeDate && now < endDate) {
@@ -240,7 +212,6 @@ export const QuotteryProvider = ({children}) => {
 
     // Combine all core node bets for filtering duplication
     let coreNodeBets = [...activeBets, ...lockedBets, ...waitingForResultsBets]
-
     if (filter === 'inactive' || filter === 'all') {
       await fetchHistoricalBets(coreNodeBets, filter, page)
     }
@@ -251,11 +222,9 @@ export const QuotteryProvider = ({children}) => {
       payload: {
         activeBets: filter === 'active' || filter === 'all' ? activeBets : [],
         lockedBets: filter === 'locked' || filter === 'all' ? lockedBets : [],
-        waitingForResultsBets:
-          filter === 'inactive' || filter === 'all' ? waitingForResultsBets : [],
+        waitingForResultsBets: filter === 'inactive' || filter === 'all' ? waitingForResultsBets : [],
       },
     })
-
     await fetchNodeInfoAndUpdate();
     setLoading(false);
   }
@@ -293,23 +262,31 @@ export const QuotteryProvider = ({children}) => {
   }
 
   useEffect(() => {
-    const getIdentityAndBalance = async () => {
-      const qHelper = new QubicHelper()
-      if (wallet) {
-        const idPackage = await qHelper.createIdPackage(wallet)
-        const sourcePublicKey = idPackage.publicKey
-        const identity = await qHelper.getIdentity(sourcePublicKey)
+    const initIdentityAndBalance = async () => {
+      if (!wallet) {
+        setWalletPublicIdentity("")
+        setBalance(null)
+        return
+      }
+      if (wallet.connectType === "walletconnect" || wallet.connectType === "mmSnap") {
+        if (wallet.publicKey) {
+          setWalletPublicIdentity(wallet.publicKey)
+          fetchBalance(wallet.publicKey)
+        }
+        return
+      }
+      try {
+        const idPackage = await qHelper.createIdPackage(wallet.privateKey || wallet)
+        const identity = await qHelper.getIdentity(idPackage.publicKey)
         if (identity) {
           setWalletPublicIdentity(identity)
           fetchBalance(identity)
         }
+      } catch (err) {
+        console.error("Error creating ID package or fetching identity:", err)
       }
     }
-
-    getIdentityAndBalance()
-
-    return () => {
-    }
+    initIdentityAndBalance()
   }, [wallet])
 
   // Refresh balance every 5 minutes
@@ -323,58 +300,6 @@ export const QuotteryProvider = ({children}) => {
     return () => clearInterval(intervalId)
   }, [walletPublicIdentity])
 
-  // Helper function to write a fixed-size byte array or string
-  const writeFixedSizeString = (view, offset, str, size) => {
-    for (let i = 0; i < size; i++) {
-      if (i < str.length) {
-        view.setUint8(offset + i, str.charCodeAt(i))
-      } else {
-        view.setUint8(offset + i, 0) // Padding with zero if string is shorter
-      }
-    }
-  }
-
-  // Helper function to write an array of fixed-size strings
-  const writeFixedSizeStringArray = (view, offset, arr, size) => {
-    for (let i = 0; i < arr.length; i++) {
-      writeFixedSizeString(view, offset + i * size, arr[i], size)
-    }
-  }
-
-  const writeFixedSizeByteArray = (view, offset, arr, size) => {
-    for (let i = 0; i < arr.length; i++) {
-      const byteArray = arr[i];
-      for (let j = 0; j < size; j++) {
-        if (j < byteArray.length) {
-          view.setUint8(offset + i * size + j, byteArray[j])
-        } else {
-          view.setUint8(offset + i * size + j, 0)
-        }
-      }
-    }
-
-    // Pad remaining slots with zeros if fewer than 8 items
-    for (let i = arr.length; i < 8; i++) {
-      for (let j = 0; j < size; j++) {
-        view.setUint8(offset + i * size + j, 0)
-      }
-    }
-  }
-
-  const packQuotteryDateFromObject = ({date, time}) => {
-    const [year, month, day] = date.split('-').map(Number)
-    const [hour, minute] = time.split(':').map(Number)
-    const second = 0 // Assuming second is always 0 as it is not provided
-
-    return packQuotteryDate(year, month, day, hour, minute, second)
-  }
-
-  // Function to pack the date into a 32-bit integer
-  const packQuotteryDate = (year, month, day, hour, minute, second) => {
-    year = year - 2000
-    return ((year - 24) << 26) | (month << 22) | (day << 17) | (hour << 12) | (minute << 6) | second
-  }
-
   const issueBetTxCosts = async (bet) => {
     const nodeInfo = await fetchNodeInfo(httpEndpoint, backendUrl)
     return parseInt(bet.maxBetSlots) * bet.options.length * nodeInfo.fee_per_slot_per_hour * calculateDiffHours(bet)
@@ -383,12 +308,12 @@ export const QuotteryProvider = ({children}) => {
   const calculateDiffHours = (bet) => {
     // Parse the end date-time from the bet object
     const endDateTime = new Date(Date.UTC(
-      parseInt(bet.endDateTime.date.split('-')[0]), // Year
-      parseInt(bet.endDateTime.date.split('-')[1]) - 1, // Month (0-based)
-      parseInt(bet.endDateTime.date.split('-')[2]), // Day
-      parseInt(bet.endDateTime.time.split(':')[0]), // Hour
-      parseInt(bet.endDateTime.time.split(':')[1]), // Minute
-      0 // Second
+      parseInt(bet.endDateTime.date.split('-')[0]),
+      parseInt(bet.endDateTime.date.split('-')[1]) - 1,
+      parseInt(bet.endDateTime.date.split('-')[2]),
+      parseInt(bet.endDateTime.time.split(':')[0]),
+      parseInt(bet.endDateTime.time.split(':')[1]),
+      0
     ))
 
     // Get the current date-time in UTC
@@ -407,181 +332,79 @@ export const QuotteryProvider = ({children}) => {
     return Math.ceil(diffMilliseconds / 1000 / 60 / 60)
   }
 
-  const signPublishResultTx = async (betId, option) => {
-    const idPackage = await qHelper.createIdPackage(wallet)
-    const qCrypto = await Crypto
-    const tick = await getTick()
-    const tickOffset = 5
-    console.log('Target Tick:', tick + tickOffset)
-
-    const publishResultDataSize = 8 // Size of publishResult_input struct in Quottery.h
-    const quotteryTxSize = qHelper.TRANSACTION_SIZE + publishResultDataSize
-    const sourcePrivateKey = idPackage.privateKey
-    const sourcePublicKey = idPackage.publicKey
-
-    // Initialize the transaction array
-    const tx = new Uint8Array(quotteryTxSize).fill(0)
-    const txView = new DataView(tx.buffer)
-    let offset = 0
-
-    // Set source key
-    for (let i = 0; i < qHelper.PUBLIC_KEY_LENGTH; i++) {
-      tx[i] = sourcePublicKey[i]
+  const issueBet = async (bet) => {
+    if (!connected || !wallet) {
+      return
     }
-    offset += qHelper.PUBLIC_KEY_LENGTH
 
-    // Set contract index for Quottery SC
-    tx[offset] = 2 // 2 for Quottery SC
-    offset++
+    try {
+      const fee = await issueBetTxCosts(bet)
+      const tick = await getTick()
+      const finalTick = tick + TICK_OFFSET
 
-    // Set destination public key (empty)
-    for (let i = 1; i < qHelper.PUBLIC_KEY_LENGTH; i++) {
-      tx[offset + i] = 0
-    }
-    offset += qHelper.PUBLIC_KEY_LENGTH - 1
+      const sourcePublicKey = await getSourcePublicKey()
+      const unsignedTx = await buildIssueBetTx(qHelper, sourcePublicKey, finalTick, bet, fee)
+      const signedTx = await signTransaction(unsignedTx)
 
-    // Set amount (zero for publishing result)
-    txView.setBigInt64(offset, BigInt(0), true)
-    offset += 8
+      const txResult = await broadcastTx(signedTx)
+      console.log('Issue Bet Response:', txResult)
 
-    // Set tick
-    txView.setUint32(offset, tick + tickOffset, true)
-    offset += 4
-
-    txView.setUint16(offset, 4, true) // 4 for publishResult
-    offset += 2
-
-    // Set inputSize
-    txView.setUint16(offset, publishResultDataSize, true)
-    offset += 2
-
-    // betId (uint32)
-    txView.setUint32(offset, betId, true)
-    offset += 4
-
-    // option (uint32)
-    txView.setUint32(offset, option, true)
-    offset += 4
-
-    // Compute digest???
-    const digest = new Uint8Array(qHelper.DIGEST_LENGTH)
-    const toSign = tx.slice(0, offset)
-    qCrypto.K12(toSign, digest, qHelper.DIGEST_LENGTH)
-
-    // Sign transaction
-    const signedTx = qCrypto.schnorrq.sign(sourcePrivateKey, sourcePublicKey, digest)
-    tx.set(signedTx, offset)
-    offset += qHelper.SIGNATURE_LENGTH
-
-    console.log('betId:', betId, 'option:', option)
-    const txResult = await broadcastTx(tx)
-    console.log('Response:', txResult)
-
-    return {
-      targetTick: tick + tickOffset,
-      txResult,
+      return {
+        targetTick: finalTick,
+        txResult}
+    } catch (err) {
+      console.error(err)
+      throw err
     }
   }
 
-  const signIssueBetTx = async (bet) => {
-    const idPackage = await qHelper.createIdPackage(wallet)
-    const qCrypto = await Crypto
-    const tick = await getTick()
-    const tickOffset = 4
-    console.log('Target Tick:', tick + tickOffset)
-    // build Quottery TX
-    const quotteryDataSize = 600
-    const quotteryTxSize = qHelper.TRANSACTION_SIZE + quotteryDataSize
-    const sourcePrivateKey = idPackage.privateKey
-    const sourcePublicKey = idPackage.publicKey
-    // fill all with zero
-    const tx = new Uint8Array(quotteryTxSize).fill(0)
-    const txView = new DataView(tx.buffer)
-    let offset = 0
-    let i
-    for (i = 0; i < qHelper.PUBLIC_KEY_LENGTH; i++) {
-      tx[i] = sourcePublicKey[i]
+  const joinBet = async (joinData) => {
+    if (!connected || !wallet) {
+      return
     }
-    offset = i
-    tx[offset] = 2 // 2 for Quottery SC
-    offset++
-    for (i = 1; i < qHelper.PUBLIC_KEY_LENGTH; i++) {
-      tx[offset + i] = 0
+
+    try {
+      const tick = await getTick()
+      const finalTick = tick + TICK_OFFSET
+
+      const sourcePublicKey = await getSourcePublicKey()
+      const unsignedTx = await buildJoinBetTx(qHelper, sourcePublicKey, finalTick, joinData)
+      const signedTx = await signTransaction(unsignedTx)
+
+      const txResult = await broadcastTx(signedTx)
+      console.log('Join Bet Response:', txResult)
+
+      return {
+        targetTick: finalTick,
+        txResult}
+    } catch (err) {
+      console.error(err)
+      throw err
     }
-    offset += i - 1
-    txView.setBigInt64(offset, BigInt(await issueBetTxCosts(bet)), true); // amount
-    offset += 8
-    txView.setUint32(offset, tick + tickOffset, true) // tick
-    offset += 4
-    txView.setUint16(offset, 1, true) // inputType for issue bet is 1
-    offset += 2
-    txView.setUint16(offset, quotteryDataSize, true); // inputSize for issue bet is 600
-    offset += 2
-    //
-    // add issue bet specific data
-    //
-    // id betDesc; // bet description / 32 bytes
-    // id_8 optionDesc; // options description / 32 bytes x 8 = 256 bytes
-    // id_8 oracleProviderId; // oracle provider ids / 32 bytes x 8 = 256 bytes
-    // uint32_8 oracleFees;   // oracle fees / 4 bytes x 8 = 32 bytes
-    // uint32 closeDate; // close date / 4 bytes
-    // uint32 endDate; // end date / 4 bytes
-    // uint64 amountPerSlot; // 8 bytes
-    // uint32 maxBetSlotPerOption; // 4 bytes
-    // uint32 numberOfOption; // 4 bytes
-    //
-    // Write betDesc (32 bytes)
-    writeFixedSizeString(txView, offset, bet.description, 32)
-    offset += 32
-    // Write optionDesc (32 bytes x 8)
-    writeFixedSizeStringArray(txView, offset, bet.options, 32)
-    offset += 32 * 8
-    // Write oracleProviderId (32 bytes x 8)
-    const oracleProviderPublicKeys = bet.providers.map(p => qHelper.getIdentityBytes(p.publicId))
-    writeFixedSizeByteArray(txView, offset, oracleProviderPublicKeys, 32)
-    offset += 32 * 8
-    // Write oracleFees (uint32 x 8)
-    bet.providers.forEach((provider, i) => {
-      provider.fee = parseInt(provider.fee * 100) // parse "12.23" to 1223
-      txView.setUint32(offset, provider.fee, true)
-      offset += 4
-    })
-    // increase offset by 4 bytes for each non existing provider
-    for (let i = bet.providers.length; i < 8; i++) {
-      offset += 4
+  }
+
+  const publishResult = async (betId, option) => {
+    if (!connected || !wallet) {
+      return
     }
-    // Write closeDate (uint32)
-    txView.setUint32(offset, packQuotteryDateFromObject(bet.closeDateTime), true)
-    offset += 4
-    // Write endDate (uint32)
-    txView.setUint32(offset, packQuotteryDateFromObject(bet.endDateTime), true)
-    offset += 4
-    // Write amountPerSlot (uint64)
-    txView.setBigUint64(offset, BigInt(bet.amountPerSlot), true)
-    offset += 8
-    // Write maxBetSlotPerOption (uint32)
-    txView.setUint32(offset, parseInt(bet.maxBetSlots), true)
-    offset += 4
-    // Write numberOfOption (uint32)
-    txView.setUint32(offset, bet.options.length, true)
-    offset += 4
 
-    // get digest
-    const digest = new Uint8Array(qHelper.DIGEST_LENGTH)
+    try {
+      const tick = await getTick()
+      const finalTick = tick + TICK_OFFSET
 
-    // sign tx
-    const toSign = tx.slice(0, offset)
-    qCrypto.K12(toSign, digest, qHelper.DIGEST_LENGTH)
-    const signedtx = qCrypto.schnorrq.sign(sourcePrivateKey, sourcePublicKey, digest)
-    tx.set(signedtx, offset)
-    offset += qHelper.SIGNATURE_LENGTH
+      const sourcePublicKey = await getSourcePublicKey()
+      const unsignedTx = await buildPublishResultTx(qHelper, sourcePublicKey, finalTick, betId, option)
+      const signedTx = await signTransaction(unsignedTx)
 
-    const txResult = await broadcastTx(tx)
-    console.log('Response:', txResult)
+      const txResult = await broadcastTx(signedTx)
+      console.log('Publish Result Response:', txResult)
 
-    return {
-      targetTick: tick + tickOffset,
-      txResult
+      return {
+        targetTick: finalTick,
+        txResult}
+    } catch (err) {
+      console.error(err)
+      throw err
     }
   }
 
@@ -592,9 +415,10 @@ export const QuotteryProvider = ({children}) => {
       loading,
       fetchBets,
       setBetsFilter,
-      signIssueBetTx,
+      issueBet,
+      joinBet,
+      publishResult,
       issueBetTxCosts,
-      signPublishResultTx,
       coreNodeBetIds,
       walletPublicIdentity,
       balance,

@@ -4,12 +4,11 @@ import {IoIosArrowDown} from "react-icons/io"
 import {useQuotteryContext} from '../contexts/QuotteryContext'
 import Card from '../components/qubic/Card'
 import QubicCoin from "../assets/qubic-coin.svg"
-import {formatQubicAmount, truncateMiddle} from '../components/qubic/util'
+import {formatQubicAmount, sumArray, truncateMiddle} from '../components/qubic/util'
 import LabelData from '../components/LabelData'
-import {useQubicConnect} from '../components/qubic/connect/QubicConnectContext'
+import {useQubicConnect} from '../contexts/QubicConnectContext'
 import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
-import {sumArray} from '../components/qubic/util'
-import {fetchBetDetail} from '../components/qubic/util/betApi'
+import {fetchBetDetail} from '../components/api/betApi'
 import {QubicHelper} from "@qubic-lib/qubic-ts-library/dist/qubicHelper";
 import {excludedBetIds, externalJsonAssetUrl, formatDate} from '../components/qubic/util/commons'
 import {useConfig} from "../contexts/ConfigContext"
@@ -25,8 +24,8 @@ function BetDetailsPage() {
   const [amountOfBetSlots, setAmountOfBetSlots] = useState(0)
   const [optionCosts, setOptionCosts] = useState(0)
   const [detailsViewVisible, setDetailsViewVisible] = useState(false)
-  const {connected, toggleConnectModal, signTx} = useQubicConnect()
-  const {coreNodeBetIds, walletPublicIdentity, balance, fetchBalance} = useQuotteryContext()
+  const {connected, toggleConnectModal} = useQubicConnect()
+  const {coreNodeBetIds, walletPublicIdentity, balance, fetchBalance, joinBet} = useQuotteryContext()
   const [isOracleProvider, setIsOracleProvider] = useState(false)
   const [isAfterEndDate, setIsAfterEndDate] = useState(false)
   const [hasEnoughParticipants, setHasEnoughParticipants] = useState(false)
@@ -114,6 +113,7 @@ function BetDetailsPage() {
       }
 
       const betId = parseInt(id)
+      console.log(coreNodeBetIds)
       const updatedBet = await fetchBetDetail(httpEndpoint, backendUrl, betId, coreNodeBetIds)
 
       const isNewFormat = updatedBet.bet_desc.startsWith('###')
@@ -482,13 +482,12 @@ function BetDetailsPage() {
               description: 'Are you sure you want to bet now?'
             }}
             onConfirm={async () => {
-              const confirmed = await signTx({
+              return await joinBet({
                 betId: bet.bet_id,
                 betOption: selectedOption,
                 numberOfSlots: amountOfBetSlots,
                 amountPerSlot: bet.amount_per_bet_slot
               })
-              return confirmed
             }}
             onTransactionComplete={handleTransactionComplete}
           />

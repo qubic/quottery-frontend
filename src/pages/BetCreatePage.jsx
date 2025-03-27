@@ -8,7 +8,7 @@ import OptionsList from '../components/OptionsList'
 import ProvidersList from '../components/ProvidersList'
 import InputNumbers from '../components/qubic/ui/InputNumbers'
 import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
-import {useQubicConnect} from '../components/qubic/connect/QubicConnectContext'
+import {useQubicConnect} from '../contexts/QubicConnectContext'
 import BetCreateConfirm from '../components/BetCreateConfirm'
 import {useQuotteryContext} from "../contexts/QuotteryContext"
 import {QubicHelper} from "@qubic-lib/qubic-ts-library/dist/qubicHelper"
@@ -24,7 +24,7 @@ function BetCreatePage() {
   const {connected, toggleConnectModal, wallet} = useQubicConnect()
   const {
     fetchBets,
-    signIssueBetTx,
+    issueBet,
     balance,
     issueBetTxCosts,
     fetchBalance,
@@ -384,7 +384,7 @@ function BetCreatePage() {
           description: <BetCreateConfirm bet={bet}/>,
         }}
         onConfirm={async () => {
-          return await signIssueBetTx(bet)
+          return await issueBet(bet)
         }}
         onTransactionComplete={handleTransactionComplete}
       />

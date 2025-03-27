@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import {useNavigate, useParams} from 'react-router-dom'
 import {useQuotteryContext} from '../contexts/QuotteryContext'
-import {useQubicConnect} from '../components/qubic/connect/QubicConnectContext'
+import {useQubicConnect} from '../contexts/QubicConnectContext'
 import ConfirmTxModal from '../components/qubic/connect/ConfirmTxModal'
 import Card from '../components/qubic/Card'
 import {formatDate} from '../components/qubic/util/commons'
 
 const BetPublishPage = () => {
   const {id} = useParams()
-  const {state, fetchBets, signPublishResultTx, walletPublicIdentity} = useQuotteryContext()
+  const {state, fetchBets, publishResult, walletPublicIdentity} = useQuotteryContext()
   const {connected, toggleConnectModal} = useQubicConnect()
   const [bet, setBet] = useState(null)
   const [selectedOption, setSelectedOption] = useState(null)
@@ -148,7 +148,7 @@ const BetPublishPage = () => {
           description: 'Are you sure you want to publish this result?',
         }}
         onConfirm={async () => {
-          return await signPublishResultTx(bet.bet_id, selectedOption)
+          return await publishResult(bet.bet_id, selectedOption)
         }}
       />
     </div>

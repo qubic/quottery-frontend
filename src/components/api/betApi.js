@@ -1,10 +1,10 @@
 /* global BigInt */
 import {Buffer} from 'buffer';
 import base64 from 'base-64';
-import {HEADERS, makeJsonData, QTRY_CONTRACT_INDEX} from './commons';
+import {HEADERS, makeJsonData, QTRY_CONTRACT_INDEX} from '../qubic/util/commons';
 import {QubicHelper} from '@qubic-lib/qubic-ts-library/dist/qubicHelper'
-import {externalJsonAssetUrl, debuglog} from './commons'
-import {hashBetData} from "./hashUtils"
+import {externalJsonAssetUrl, debuglog} from '../qubic/util/commons'
+import {hashBetData} from "../qubic/util/hashUtils"
 
 // Get Node's info using qubic-http's API
 export const fetchNodeInfo = async (httpEndpoint, backendUrl) => {

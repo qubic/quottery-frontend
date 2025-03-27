@@ -1,7 +1,7 @@
 // import ConfirmSlider from "../../ConfirmSlider"
 import { useEffect, useState } from "react"
 import Card from "../Card"
-import { useQubicConnect } from "./QubicConnectContext"
+import { useQubicConnect } from "../../../contexts/QubicConnectContext"
 
 const ConfirmTxModal = ({ tx, open, onClose, onConfirm, onTransactionComplete }) => {
     const { getTick } = useQubicConnect()
