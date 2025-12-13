@@ -1,3 +1,4 @@
+# This repository is archived and is no longer being actively maintained. Development for Quottery V2 has moved to a new codebase
 # quottery-frontend
 Frontend for the Quottery Smart Contract.
 
